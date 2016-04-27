@@ -1,14 +1,14 @@
 [
 {
-  "modid": "Bonfire",
+  "modid": "bonfire",
   "name": "Bonfire",
-  "description": "I like bonfire.",
-  "version": "1.0",
-  "mcversion": "1.8",
+  "description": "add bonfire.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
   "url": "",
   "updateUrl": "",
   "authorList": ["yousui115"],
-  "credits": "too many sticks.",
+  "credits": ":-)",
   "logoFile": "",
   "screenshots": [],
   "dependencies": []

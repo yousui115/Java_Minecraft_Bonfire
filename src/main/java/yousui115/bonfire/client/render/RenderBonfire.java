@@ -3,11 +3,12 @@ package yousui115.bonfire.client.render;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
@@ -87,13 +88,20 @@ public class RenderBonfire extends Render
     {
         super(renderManager);
 
-        TextureMap texture = Minecraft.getMinecraft().getTextureMapBlocks();
-        iconIndex = new TextureAtlasSprite[] { texture.getAtlasSprite("minecraft:blocks/fire_layer_0"),
-                                               texture.getAtlasSprite("minecraft:blocks/fire_layer_1"),
-                                               texture.getAtlasSprite("minecraft:blocks/log_oak_top"),
-                                               texture.getAtlasSprite("minecraft:blocks/planks_oak"),
-                                               texture.getAtlasSprite("minecraft:blocks/log_oak")
-                                             };
+//        TextureMap texture = Minecraft.getMinecraft().getTextureMapBlocks();
+//        iconIndex = new TextureAtlasSprite[] { texture.getAtlasSprite("minecraft:blocks/fire_layer_0"),
+//                                               texture.getAtlasSprite("minecraft:blocks/fire_layer_1"),
+//                                               texture.getAtlasSprite("minecraft:blocks/log_oak_top"),
+//                                               texture.getAtlasSprite("minecraft:blocks/planks_oak"),
+//                                               texture.getAtlasSprite("minecraft:blocks/log_oak")
+//                                             };
+//        iconIndex = new TextureAtlasSprite[] {  texture.getTextureExtry("minecraft:blocks/fire_layer_0"),
+//                                                texture.getTextureExtry("minecraft:blocks/fire_layer_1"),
+//                                                texture.getTextureExtry("minecraft:blocks/log_oak_top"),
+//                                                texture.getTextureExtry("minecraft:blocks/planks_oak"),
+//                                                texture.getTextureExtry("minecraft:blocks/log_oak")
+//                                             };
+
     }
 
     /**
@@ -113,6 +121,14 @@ public class RenderBonfire extends Render
      */
     protected void doRenderBonfire(EntityBonfire entity, double dX, double dY, double dZ, float ff, float ff1)
     {
+        TextureMap texture = Minecraft.getMinecraft().getTextureMapBlocks();
+        iconIndex = new TextureAtlasSprite[] { texture.getAtlasSprite("minecraft:blocks/fire_layer_0"),
+                                               texture.getAtlasSprite("minecraft:blocks/fire_layer_1"),
+                                               texture.getAtlasSprite("minecraft:blocks/log_oak_top"),
+                                               texture.getAtlasSprite("minecraft:blocks/planks_oak"),
+                                               texture.getAtlasSprite("minecraft:blocks/log_oak")
+                                             };
+
         //■描画に必要なデータを作成
         // ▼データウォッチャー 取得
         entity.getDataWatcherLocal();
@@ -132,7 +148,8 @@ public class RenderBonfire extends Render
         // ▼てせれいたー
         Tessellator tessellator = Tessellator.getInstance();
         // ▼わーるどれんだらー
-        WorldRenderer worldrenderer = tessellator.getWorldRenderer();
+//        WorldRenderer worldrenderer = tessellator.getWorldRenderer();
+        VertexBuffer worldrenderer = tessellator.getBuffer();
 
         //■薪々の描画
         for (int idy = 0; idy < 4; idy++)
@@ -151,7 +168,7 @@ public class RenderBonfire extends Render
             //▼アルファ値On
             //GlStateManager.enableAlpha();
             //▼ライティング処理On
-            GlStateManager.enableLighting();
+//            GlStateManager.enableLighting();
             //▼グラデーション設定On
             GlStateManager.shadeModel(GL11.GL_SMOOTH);
 
@@ -169,8 +186,10 @@ public class RenderBonfire extends Render
             //GL11.glRotatef(20.0F, 1.0F, 0.0F, 0.0F);
             GlStateManager.rotate(20.0F, 1.0F, 0.0F, 0.0F);
 
-            worldrenderer.startDrawingQuads();
-            worldrenderer.setNormal(0.0F, 1.0F, 0.0F);
+//            worldrenderer.startDrawingQuads();
+            worldrenderer.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
+
+//            worldrenderer.setNormal(0.0F, 1.0F, 0.0F);
 
             final float fXMax = 512f;
             final float fYMax = 512f;
@@ -184,51 +203,84 @@ public class RenderBonfire extends Render
                                     {iconT.getMinV(), iconT.getMinV() + fHalf, iconT.getMaxV()}};
 
                 int col = nVertexColor[nVecTexPos[idx][0]];
-                worldrenderer.setColorRGBA_F(fColor[col][0], fColor[col][1], fColor[col][2], fColor[col][3]);
-                worldrenderer.addVertexWithUV(dVec[nVecTexPos[idx][0]][0],
-                                                dVec[nVecTexPos[idx][0]][1],
-                                                dVec[nVecTexPos[idx][0]][2],
-                                                fUV[0][ nTex[ nVecTexPos[idx][4] ][1] ],
-                                                fUV[1][ nTex[ nVecTexPos[idx][4] ][2] ]);
+//                worldrenderer.setColorRGBA_F(fColor[col][0], fColor[col][1], fColor[col][2], fColor[col][3]);
+//                worldrenderer.addVertexWithUV(dVec[nVecTexPos[idx][0]][0],
+//                                                dVec[nVecTexPos[idx][0]][1],
+//                                                dVec[nVecTexPos[idx][0]][2],
+//                                                fUV[0][ nTex[ nVecTexPos[idx][4] ][1] ],
+//                                                fUV[1][ nTex[ nVecTexPos[idx][4] ][2] ]);
                                                 //fTex[nVecTexPos[idx][4]][0]/fXMax,
                                                 //fTex[nVecTexPos[idx][4]][1]/fYMax);
+                worldrenderer.pos(  dVec[nVecTexPos[idx][0]][0],
+                                    dVec[nVecTexPos[idx][0]][1],
+                                    dVec[nVecTexPos[idx][0]][2])
+                             .tex(  fUV[0][ nTex[ nVecTexPos[idx][4] ][1] ],
+                                    fUV[1][ nTex[ nVecTexPos[idx][4] ][2] ])
+                             .color(fColor[col][0], fColor[col][1], fColor[col][2], fColor[col][3])
+                             .normal(0.0f, 1.0f, 0.0f)
+                             .endVertex();
 
                 col = nVertexColor[nVecTexPos[idx][1]];
-                worldrenderer.setColorRGBA_F(fColor[col][0], fColor[col][1], fColor[col][2], fColor[col][3]);
-                worldrenderer.addVertexWithUV(dVec[nVecTexPos[idx][1]][0],
-                                                dVec[nVecTexPos[idx][1]][1],
-                                                dVec[nVecTexPos[idx][1]][2],
-                                                fUV[0][ nTex[ nVecTexPos[idx][5] ][1] ],
-                                                fUV[1][ nTex[ nVecTexPos[idx][5] ][2] ]);
+//                worldrenderer.setColorRGBA_F(fColor[col][0], fColor[col][1], fColor[col][2], fColor[col][3]);
+//                worldrenderer.addVertexWithUV(dVec[nVecTexPos[idx][1]][0],
+//                                                dVec[nVecTexPos[idx][1]][1],
+//                                                dVec[nVecTexPos[idx][1]][2],
+//                                                fUV[0][ nTex[ nVecTexPos[idx][5] ][1] ],
+//                                                fUV[1][ nTex[ nVecTexPos[idx][5] ][2] ]);
                                                 //fTex[nVecTexPos[idx][5]][0]/fXMax,
                                                 //fTex[nVecTexPos[idx][5]][1]/fYMax);
+                worldrenderer.pos(  dVec[nVecTexPos[idx][1]][0],
+                                    dVec[nVecTexPos[idx][1]][1],
+                                    dVec[nVecTexPos[idx][1]][2])
+                             .tex(  fUV[0][ nTex[ nVecTexPos[idx][5] ][1] ],
+                                    fUV[1][ nTex[ nVecTexPos[idx][5] ][2] ])
+                             .color(fColor[col][0], fColor[col][1], fColor[col][2], fColor[col][3])
+                             .normal(0.0f, 1.0f, 0.0f)
+                             .endVertex();
 
                 col = nVertexColor[nVecTexPos[idx][2]];
-                worldrenderer.setColorRGBA_F(fColor[col][0], fColor[col][1], fColor[col][2], fColor[col][3]);
-                worldrenderer.addVertexWithUV(dVec[nVecTexPos[idx][2]][0],
-                                                dVec[nVecTexPos[idx][2]][1],
-                                                dVec[nVecTexPos[idx][2]][2],
-                                                fUV[0][ nTex[ nVecTexPos[idx][6] ][1] ],
-                                                fUV[1][ nTex[ nVecTexPos[idx][6] ][2] ]);
+//                worldrenderer.setColorRGBA_F(fColor[col][0], fColor[col][1], fColor[col][2], fColor[col][3]);
+//                worldrenderer.addVertexWithUV(dVec[nVecTexPos[idx][2]][0],
+//                                                dVec[nVecTexPos[idx][2]][1],
+//                                                dVec[nVecTexPos[idx][2]][2],
+//                                                fUV[0][ nTex[ nVecTexPos[idx][6] ][1] ],
+//                                                fUV[1][ nTex[ nVecTexPos[idx][6] ][2] ]);
                                                 //fTex[nVecTexPos[idx][6]][0]/fXMax,
                                                 //fTex[nVecTexPos[idx][6]][1]/fYMax);
+                worldrenderer.pos(  dVec[nVecTexPos[idx][2]][0],
+                                    dVec[nVecTexPos[idx][2]][1],
+                                    dVec[nVecTexPos[idx][2]][2])
+                             .tex(  fUV[0][ nTex[ nVecTexPos[idx][6] ][1] ],
+                                    fUV[1][ nTex[ nVecTexPos[idx][6] ][2] ])
+                             .color(fColor[col][0], fColor[col][1], fColor[col][2], fColor[col][3])
+                             .normal(0.0f, 1.0f, 0.0f)
+                             .endVertex();
 
                 col = nVertexColor[nVecTexPos[idx][3]];
-                worldrenderer.setColorRGBA_F(fColor[col][0], fColor[col][1], fColor[col][2], fColor[col][3]);
-                worldrenderer.addVertexWithUV(dVec[nVecTexPos[idx][3]][0],
-                                                dVec[nVecTexPos[idx][3]][1],
-                                                dVec[nVecTexPos[idx][3]][2],
-                                                fUV[0][ nTex[ nVecTexPos[idx][7] ][1] ],
-                                                fUV[1][ nTex[ nVecTexPos[idx][7] ][2] ]);
+//                worldrenderer.setColorRGBA_F(fColor[col][0], fColor[col][1], fColor[col][2], fColor[col][3]);
+//                worldrenderer.addVertexWithUV(dVec[nVecTexPos[idx][3]][0],
+//                                                dVec[nVecTexPos[idx][3]][1],
+//                                                dVec[nVecTexPos[idx][3]][2],
+//                                                fUV[0][ nTex[ nVecTexPos[idx][7] ][1] ],
+//                                                fUV[1][ nTex[ nVecTexPos[idx][7] ][2] ]);
                                                 //fTex[nVecTexPos[idx][7]][0]/fXMax,
                                                 //fTex[nVecTexPos[idx][7]][1]/fYMax);
+                worldrenderer.pos(  dVec[nVecTexPos[idx][3]][0],
+                                    dVec[nVecTexPos[idx][3]][1],
+                                    dVec[nVecTexPos[idx][3]][2])
+                             .tex(  fUV[0][ nTex[ nVecTexPos[idx][7] ][1] ],
+                                    fUV[1][ nTex[ nVecTexPos[idx][7] ][2] ])
+                             .color(fColor[col][0], fColor[col][1], fColor[col][2], fColor[col][3])
+                             .normal(0.0f, 1.0f, 0.0f)
+                             .endVertex();
+
             }
             tessellator.draw();
 
             GlStateManager.shadeModel(GL11.GL_FLAT);
             //GlStateManager.disableBlend();
             //GlStateManager.disableAlpha();
-            GlStateManager.disableLighting();
+//            GlStateManager.disableLighting();
 
             //GlStateManager.disableRescaleNormal();
 
@@ -242,7 +294,7 @@ public class RenderBonfire extends Render
             //▼ライティング処理On
             //GlStateManager.enableLighting();
 
-            worldrenderer.setColorRGBA_F(1.0F, 1.0F, 1.0F, 1.0F);
+//            worldrenderer.setColorRGBA_F(1.0F, 1.0F, 1.0F, 1.0F);
 
             for (int idx = 0; idx < 4; idx++)
             {
@@ -257,7 +309,9 @@ public class RenderBonfire extends Render
                 float fV2 = iconIndex[nNo].getMaxV();
 
                 GlStateManager.pushMatrix();
-                worldrenderer.startDrawingQuads();
+
+//                worldrenderer.startDrawingQuads();
+                worldrenderer.begin(7, DefaultVertexFormats.OLDMODEL_POSITION_TEX_NORMAL);
 
                 //5.適正位置
                 GlStateManager.translate((float)dX, (float)dY + 0.4F, (float)dZ);
@@ -270,10 +324,14 @@ public class RenderBonfire extends Render
                 //1.縮小
                 GlStateManager.scale(fScaleFire, fScaleFire, 0.0F);
 
-                worldrenderer.addVertexWithUV(-fX,        fY, fZ, fU1, fV1);
-                worldrenderer.addVertexWithUV(-fX, 1.0F - fY, fZ, fU1, fV2);
-                worldrenderer.addVertexWithUV( fX, 1.0F - fY, fZ, fU2, fV2);
-                worldrenderer.addVertexWithUV( fX,        fY, fZ, fU2, fV1);
+//                worldrenderer.addVertexWithUV(-fX,        fY, fZ, fU1, fV1);
+//                worldrenderer.addVertexWithUV(-fX, 1.0F - fY, fZ, fU1, fV2);
+//                worldrenderer.addVertexWithUV( fX, 1.0F - fY, fZ, fU2, fV2);
+//                worldrenderer.addVertexWithUV( fX,        fY, fZ, fU2, fV1);
+                worldrenderer.pos(-fX,        fY, fZ).tex(fU1, fV1).normal(0f, 1f, 0f).endVertex();
+                worldrenderer.pos(-fX, 1.0F - fY, fZ).tex(fU1, fV2).normal(0f, 1f, 0f).endVertex();
+                worldrenderer.pos( fX, 1.0F - fY, fZ).tex(fU2, fV2).normal(0f, 1f, 0f).endVertex();
+                worldrenderer.pos( fX,        fY, fZ).tex(fU2, fV1).normal(0f, 1f, 0f).endVertex();
 
                 tessellator.draw();
                 GlStateManager.popMatrix();
@@ -301,7 +359,8 @@ public class RenderBonfire extends Render
                 float fV2 = iconIndex[nNo].getMaxV();
 
                 GlStateManager.pushMatrix();
-                worldrenderer.startDrawingQuads();
+//                worldrenderer.startDrawingQuads();
+                worldrenderer.begin(7, DefaultVertexFormats.OLDMODEL_POSITION_TEX_NORMAL);
 
                 //4.適正位置
                 GlStateManager.translate((float)dX, (float)dY + 0.4F, (float)dZ);
@@ -312,10 +371,14 @@ public class RenderBonfire extends Render
                 //1.縮小
                 GlStateManager.scale(fScaleFire, fScaleFire, 0.0F);
 
-                worldrenderer.addVertexWithUV(-fX,        fY, fZ, fU1, fV1);
-                worldrenderer.addVertexWithUV(-fX, 1.0F - fY, fZ, fU1, fV2);
-                worldrenderer.addVertexWithUV( fX, 1.0F - fY, fZ, fU2, fV2);
-                worldrenderer.addVertexWithUV( fX,        fY, fZ, fU2, fV1);
+//                worldrenderer.addVertexWithUV(-fX,        fY, fZ, fU1, fV1);
+//                worldrenderer.addVertexWithUV(-fX, 1.0F - fY, fZ, fU1, fV2);
+//                worldrenderer.addVertexWithUV( fX, 1.0F - fY, fZ, fU2, fV2);
+//                worldrenderer.addVertexWithUV( fX,        fY, fZ, fU2, fV1);
+                worldrenderer.pos(-fX,        fY, fZ).tex(fU1, fV1).normal(0f, 1f, 0f).endVertex();
+                worldrenderer.pos(-fX, 1.0F - fY, fZ).tex(fU1, fV2).normal(0f, 1f, 0f).endVertex();
+                worldrenderer.pos( fX, 1.0F - fY, fZ).tex(fU2, fV2).normal(0f, 1f, 0f).endVertex();
+                worldrenderer.pos( fX,        fY, fZ).tex(fU2, fV1).normal(0f, 1f, 0f).endVertex();
 
                 tessellator.draw();
                 GlStateManager.popMatrix();

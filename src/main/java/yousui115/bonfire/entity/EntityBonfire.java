@@ -8,13 +8,20 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
+import net.minecraft.init.SoundEvents;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.BlockPos;
+import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.network.datasync.DataSerializers;
+import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumParticleTypes;
-import net.minecraft.util.MathHelper;
+import net.minecraft.util.SoundCategory;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import yousui115.bonfire.Bonfire;
 
@@ -22,6 +29,9 @@ public class EntityBonfire extends Entity
 {
     protected int tickFire = 0;
     protected boolean isReuse = false;
+
+    protected static final DataParameter<Integer> TICK_FIRE = EntityDataManager.<Integer>createKey(EntityBonfire.class, DataSerializers.VARINT);
+    protected static final DataParameter<Boolean> REUSE = EntityDataManager.<Boolean>createKey(EntityBonfire.class, DataSerializers.BOOLEAN);
 
     /**
      * ■コンストラクタ（クライアント）
@@ -115,15 +125,22 @@ public class EntityBonfire extends Entity
             }
 
             //■SE（ぱちぱち）
-            if (tickFire % 20 == 0) {
+            if (tickFire % 20 == 0)
+            {
                 //(x, y, z, filename, volume, pitch)
-                worldObj.playSoundEffect((float)posX + 0.5F, (float)posY + 0.5F, (float)posZ + 0.5F,
-                                         "fire.fire",
-                                         getFireScale(stateFire), rand.nextFloat() * 0.7F + 0.3F);
+//                worldObj.playSoundEffect((float)posX + 0.5F, (float)posY + 0.5F, (float)posZ + 0.5F,
+//                                         "fire.fire",
+//                                         getFireScale(stateFire), rand.nextFloat() * 0.7F + 0.3F);
+                this.worldObj.playSound((float)posX + 0.5F, (float)posY + 0.5F, (float)posZ + 0.5F,
+                                        SoundEvents.block_fire_ambient,
+                                        SoundCategory.BLOCKS,
+                                        1.0F + rand.nextFloat(),
+                                        rand.nextFloat() * 0.7F + 0.3F, false);
             }
 
             //■パーティクル（煙）
-            if (rand.nextInt(10) < 5) {
+            if (rand.nextInt(10) < 5)
+            {
                 for(int l = 0; l < 3; l++)
                 {
                     float fX = (float)posX + (0.5F - rand.nextFloat()) * 0.5F;
@@ -172,9 +189,10 @@ public class EntityBonfire extends Entity
             }
 
             //■ボッ！
-            worldObj.playSoundEffect(posX, posY, posZ,
-                    "mob.ghast.fireball",
-                    1.0F, rand.nextFloat() * 0.4F + 0.8F);
+            soundIgnition();
+//            worldObj.playSoundEffect(posX, posY, posZ,
+//                    "mob.ghast.fireball",
+//                    1.0F, rand.nextFloat() * 0.4F + 0.8F);
         }
 
         tickFire -= nBackTime;
@@ -201,9 +219,9 @@ public class EntityBonfire extends Entity
         BlockPos pos = new BlockPos(nX, nY, nZ);
 
         // (空の下じゃない 又は 雨が降ってない)
-        return (!worldObj.canLightningStrike(pos) || !worldObj.isRaining());
+//        return (!worldObj.canLightningStrike(pos) || !worldObj.isRaining());
+        return !worldObj.isRainingAt(pos);
     }
-
 
     /**
      * ■■消火します
@@ -224,7 +242,8 @@ public class EntityBonfire extends Entity
         tickFire = stateFire.getTickFireMax(isReuse);
 
         //■火が消える音
-        worldObj.playSoundEffect(posX, posY, posZ, "random.fizz", 0.5F, 3.0F);
+//        worldObj.playSoundEffect(posX, posY, posZ, "random.fizz", 0.5F, 3.0F);
+        soundFizz();
 
         return stateFire;
     }
@@ -275,12 +294,14 @@ public class EntityBonfire extends Entity
         //■設置場所の下のブロックが空 or 普通の立方体じゃない とfalse
         pos = new BlockPos(nX, nY - 1, nZ);
         block = worldObj.getBlockState(pos).getBlock();
-        if (Block.isEqualTo(block, Blocks.air) == true ||
-            block.isSolidFullCube() == false)
+//        if (Block.isEqualTo(block, Blocks.air) ||
+//            block.isSolidFullCube() == false)
+        if (Block.isEqualTo(block, Blocks.air))
         { return false; }
 
         //■そのブロックに当り判定がない とfalse
-        AxisAlignedBB aabb = block.getCollisionBoundingBox(worldObj, pos, worldObj.getBlockState(pos));
+//        AxisAlignedBB aabb = block.getCollisionBoundingBox(worldObj, pos, worldObj.getBlockState(pos));
+        AxisAlignedBB aabb = block.getCollisionBoundingBox(worldObj.getBlockState(pos), worldObj, pos);
         if(aabb == null) { return false; }
 
         return true;
@@ -302,7 +323,8 @@ public class EntityBonfire extends Entity
         //■火がついてるなら、音が鳴る
         if (state.isFire())
         {
-            worldObj.playSoundEffect(posX, posY, posZ, "random.fizz", 0.5F, 3.0F);
+//            worldObj.playSoundEffect(posX, posY, posZ, "random.fizz", 0.5F, 3.0F);
+            soundFizz();
         }
 
         if (!worldObj.isRemote)
@@ -348,11 +370,13 @@ public class EntityBonfire extends Entity
      * ■■プレイヤーが右クリックすると呼ばれる
      */
     @Override
-    public boolean interactFirst(EntityPlayer playerIn)
+//    public boolean interactFirst(EntityPlayer playerIn)
+    public boolean processInitialInteract(EntityPlayer playerIn, ItemStack stackIn, EnumHand handIn)
     {
         boolean isInteract = false;
 
-        ItemStack itemstack = playerIn.getCurrentEquippedItem();
+//        ItemStack itemstack = playerIn.getCurrentEquippedItem();
+        ItemStack itemstack = playerIn.getItemStackFromSlot(handIn == EnumHand.MAIN_HAND ? EntityEquipmentSlot.MAINHAND : EntityEquipmentSlot.OFFHAND);
 
         //■何も持ってないプレイヤーなど不要！
         if (itemstack == null) { return isInteract; }
@@ -372,14 +396,17 @@ public class EntityBonfire extends Entity
             this.startBurning();
 
             //■カチッ！
-            worldObj.playSoundEffect(posX + 0.5D, posY + 0.5D, posZ + 0.5D, "fire.ignite", 1.0F, rand.nextFloat() * 0.4F + 0.8F);
-            playerIn.swingItem();
+//            worldObj.playSoundEffect(posX + 0.5D, posY + 0.5D, posZ + 0.5D, "fire.ignite", 1.0F, rand.nextFloat() * 0.4F + 0.8F);
+            soundIgnition();
+
+//            playerIn.swingItem();
+            playerIn.swingArm(handIn);
 
             //■アイテムへの使用ダメージ
             itemstack.damageItem(1, playerIn);
-            if (itemstack.stackSize <= 0) {
-                playerIn.destroyCurrentEquippedItem();
-            }
+//            if (itemstack.stackSize <= 0) {
+//                playerIn.destroyCurrentEquippedItem();
+//            }
 
             //isInteract = true;
         }
@@ -391,8 +418,11 @@ public class EntityBonfire extends Entity
             doFireFighting(stateFire);
 
             //■ジュー！
-            worldObj.playSoundEffect(posX, posY, posZ, "random.fizz", 0.5F, 3.0F);
-            playerIn.swingItem();
+//            worldObj.playSoundEffect(posX, posY, posZ, "random.fizz", 0.5F, 3.0F);
+            soundFizz();
+
+//            playerIn.swingItem();
+            playerIn.swingArm(handIn);
 
             isInteract = true;
         }
@@ -415,6 +445,7 @@ public class EntityBonfire extends Entity
     /**
      * ■■ブロック外への押し出しは有効か否か
      */
+    @Override
     protected boolean pushOutOfBlocks(double x, double y, double z)
     {
         return false;
@@ -424,6 +455,7 @@ public class EntityBonfire extends Entity
     /**
      * ■■右クリックを有効にするか否か
      */
+    @Override
     public boolean canBeCollidedWith()
     {
         return true;
@@ -466,6 +498,29 @@ public class EntityBonfire extends Entity
         tagCompound.setBoolean("isReuse", getIsReuse());
     }
 
+    /**
+     * ■着火音
+     */
+    protected void soundIgnition()
+    {
+        this.worldObj.playSound(posX, posY, posZ,
+                SoundEvents.entity_ghast_shoot,
+                SoundCategory.AMBIENT,
+                1.0F,
+                rand.nextFloat() * 0.4F + 0.8F, false);
+    }
+
+    /**
+     * ■消火音
+     */
+    protected void soundFizz()
+    {
+        this.worldObj.playSound(posX, posY, posZ,
+                SoundEvents.block_fire_extinguish,
+                SoundCategory.BLOCKS,
+                0.5F,
+                2.6F + (rand.nextFloat() - rand.nextFloat()) * 0.8F, false);
+    }
     //--------------------------------------------- ↓Render から呼ばれるメソッド ------------------------------------------
     public float getFireScale(EnumWoodState state)
     {
@@ -602,8 +657,10 @@ public class EntityBonfire extends Entity
 
     public void initDataWatcher()
     {
-        this.dataWatcher.addObject(10, new Integer(0));     // tickFire
-        this.dataWatcher.addObject(11, new Integer(0));     // isReuse
+//        this.dataWatcher.addObject(10, new Integer(0));     // tickFire
+//        this.dataWatcher.addObject(11, new Integer(0));     // isReuse
+        this.dataWatcher.register(TICK_FIRE, Integer.valueOf(0));
+        this.dataWatcher.register(REUSE,     Boolean.FALSE);
     }
 
     public void getDataWatcherLocal()
@@ -624,22 +681,28 @@ public class EntityBonfire extends Entity
 
     public int getTickFire()
     {
-        return this.dataWatcher.getWatchableObjectInt(10);
+//        return this.dataWatcher.getWatchableObjectInt(10);
+        return dataWatcher.get(TICK_FIRE);
     }
 
     public void setTickFire()
     {
-        this.dataWatcher.updateObject(10, this.tickFire);
+//        this.dataWatcher.updateObject(10, this.tickFire);
+        dataWatcher.set(TICK_FIRE, tickFire);
+//        dataWatcher.setDirty(TICK_FIRE);
     }
 
     public boolean getIsReuse()
     {
-        return this.dataWatcher.getWatchableObjectInt(11) == 1;
+//        return this.dataWatcher.getWatchableObjectInt(11) == 1;
+        return dataWatcher.get(REUSE);
     }
 
     public void setIsReuse()
     {
-        this.dataWatcher.updateObject(11, isReuse ? 1 : 0);
+//        this.dataWatcher.updateObject(11, isReuse ? 1 : 0);
+        dataWatcher.set(REUSE, isReuse);
+//        dataWatcher.setDirty(REUSE);
     }
 
     /**

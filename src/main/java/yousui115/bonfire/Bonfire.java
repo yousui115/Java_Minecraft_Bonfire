@@ -3,6 +3,7 @@ package yousui115.bonfire;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.item.Item;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -16,15 +17,14 @@ import yousui115.bonfire.block.BlockLight;
 import yousui115.bonfire.entity.EntityBonfire;
 import yousui115.bonfire.event.EventHooks;
 import yousui115.bonfire.item.ItemBonfire;
-import yousui115.bonfire.item.ItemLightBlock;
 import yousui115.bonfire.item.crafting.RecipesStandard;
 
 @Mod(modid = Bonfire.MOD_ID, version = Bonfire.VERSION, useMetadata = true)
 public class Bonfire
 {
     //■固定文字列
-    public static final String MOD_DOMAIN = "yousui115.bonfire";
-    public static final String MOD_ID = "Bonfire";
+    public static final String MOD_ID = "bonfire";
+    public static final String MOD_DOMAIN = "yousui115." + MOD_ID;
     public static final String VERSION = "1.0";
 
     //■インスタント
@@ -37,9 +37,13 @@ public class Bonfire
 
     //■追加アイテム
     public static Item itemBonfire;
+    public static String nameBonfire = "bf_bonfire";
+    public static ResourceLocation rlBonfire;
 
     //■追加ブロック
     public static Block blockLight;
+    public static String nameLight = "bf_blocklight";
+    public static ResourceLocation rlLight;
 
     /**
      * ■初期化処理（前処理）
@@ -48,22 +52,18 @@ public class Bonfire
     @EventHandler
     public void preinit(FMLPreInitializationEvent event)
     {
-        //■アイテム系の処理
-        // ▼アイテムインスタンスの作成。
-        itemBonfire = new ItemBonfire().setUnlocalizedName("ItemBonfire");
+        //■アイテムの生成と登録
+        itemBonfire = new ItemBonfire().setUnlocalizedName(nameBonfire);
+        rlBonfire = new ResourceLocation(MOD_ID, nameBonfire);
+        GameRegistry.register(itemBonfire, rlBonfire);
 
-        // ▼アイテムの登録。登録文字列はMOD内で被らなければ何でも良い。
-        GameRegistry.registerItem(itemBonfire, "ItemBonfire");
-
-        //■ブロック系の処理
-        // ▼ブロックインスタンスの作成
+        //■ブロックの生成と登録
         blockLight = new BlockLight(Material.circuits)
                             .setHardness(0.3F)
                             .setLightLevel(1.0F)
-                            .setUnlocalizedName("bf_blocklight");
-
-        // ▼ブロックの登録。(最後の文字列がblockstateのjsonファイル名)
-        GameRegistry.registerBlock(blockLight, ItemLightBlock.class, "bf_blocklight");
+                            .setUnlocalizedName(nameLight);
+        rlLight = new ResourceLocation(MOD_ID, nameLight);
+        GameRegistry.register(blockLight, rlLight);
 
         //■モデル登録
         proxy.registerModels();
@@ -89,12 +89,8 @@ public class Bonfire
         MinecraftForge.EVENT_BUS.register(new EventHooks());
     }
 
-    /**
-     * ■初期化処理（後処理）
-     * @param event
-     */
     @EventHandler
-    public void postinit(FMLPostInitializationEvent event)
+    public void post(FMLPostInitializationEvent event)
     {
     }
 }
