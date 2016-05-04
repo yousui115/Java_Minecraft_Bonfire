@@ -1,5 +1,5 @@
-﻿{
+{
     "variants": {
-        "normal": { "model": "Bonfire:bf_blocklight" }
+        "normal": { "model": "bonfire:bf_blocklight" }
     }
 }

@@ -9,8 +9,8 @@ import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.entity.Entity;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.client.registry.IRenderFactory;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -22,12 +22,12 @@ import yousui115.bonfire.entity.EntityBonfire.EnumWoodState;
 //TODO: めちゃくちゃソースが汚い。
 
 @SideOnly(Side.CLIENT)
-public class RenderBonfire extends Render
+public class RenderBonfire extends Render<EntityBonfire>
 {
     private static final ResourceLocation resource = new ResourceLocation("textures/atlas/blocks.png");
     private float fColor[][] = new float[4][4];
 
-    protected TextureAtlasSprite iconIndex[];
+    protected TextureAtlasSprite iconIndex[] = new TextureAtlasSprite[5];
 
     //■薪々パラメータ
     private
@@ -108,26 +108,15 @@ public class RenderBonfire extends Render
      * ■描画処理（呼び出し部分）
      */
     @Override
-    public void doRender(Entity entity, double x, double y, double z, float p_76986_8_, float partialTicks)
-    {
-        if (entity instanceof EntityBonfire)
-        {
-            doRenderBonfire((EntityBonfire)entity, x, y, z, p_76986_8_, partialTicks);
-        }
-    }
-
-    /**
-     * ■描画処理（本処理）
-     */
-    protected void doRenderBonfire(EntityBonfire entity, double dX, double dY, double dZ, float ff, float ff1)
+//    public void doRender(EntityBonfire entity, double x, double y, double z, float p_76986_8_, float partialTicks)
+    public void doRender(EntityBonfire entity, double dX, double dY, double dZ, float ff, float ff1)
     {
         TextureMap texture = Minecraft.getMinecraft().getTextureMapBlocks();
-        iconIndex = new TextureAtlasSprite[] { texture.getAtlasSprite("minecraft:blocks/fire_layer_0"),
-                                               texture.getAtlasSprite("minecraft:blocks/fire_layer_1"),
-                                               texture.getAtlasSprite("minecraft:blocks/log_oak_top"),
-                                               texture.getAtlasSprite("minecraft:blocks/planks_oak"),
-                                               texture.getAtlasSprite("minecraft:blocks/log_oak")
-                                             };
+        iconIndex[0] = texture.getAtlasSprite("minecraft:blocks/fire_layer_0");
+        iconIndex[1] = texture.getAtlasSprite("minecraft:blocks/fire_layer_1");
+        iconIndex[2] = texture.getAtlasSprite("minecraft:blocks/log_oak_top");
+        iconIndex[3] = texture.getAtlasSprite("minecraft:blocks/planks_oak");
+        iconIndex[4] = texture.getAtlasSprite("minecraft:blocks/log_oak");
 
         //■描画に必要なデータを作成
         // ▼データウォッチャー 取得
@@ -203,14 +192,6 @@ public class RenderBonfire extends Render
                                     {iconT.getMinV(), iconT.getMinV() + fHalf, iconT.getMaxV()}};
 
                 int col = nVertexColor[nVecTexPos[idx][0]];
-//                worldrenderer.setColorRGBA_F(fColor[col][0], fColor[col][1], fColor[col][2], fColor[col][3]);
-//                worldrenderer.addVertexWithUV(dVec[nVecTexPos[idx][0]][0],
-//                                                dVec[nVecTexPos[idx][0]][1],
-//                                                dVec[nVecTexPos[idx][0]][2],
-//                                                fUV[0][ nTex[ nVecTexPos[idx][4] ][1] ],
-//                                                fUV[1][ nTex[ nVecTexPos[idx][4] ][2] ]);
-                                                //fTex[nVecTexPos[idx][4]][0]/fXMax,
-                                                //fTex[nVecTexPos[idx][4]][1]/fYMax);
                 worldrenderer.pos(  dVec[nVecTexPos[idx][0]][0],
                                     dVec[nVecTexPos[idx][0]][1],
                                     dVec[nVecTexPos[idx][0]][2])
@@ -221,14 +202,6 @@ public class RenderBonfire extends Render
                              .endVertex();
 
                 col = nVertexColor[nVecTexPos[idx][1]];
-//                worldrenderer.setColorRGBA_F(fColor[col][0], fColor[col][1], fColor[col][2], fColor[col][3]);
-//                worldrenderer.addVertexWithUV(dVec[nVecTexPos[idx][1]][0],
-//                                                dVec[nVecTexPos[idx][1]][1],
-//                                                dVec[nVecTexPos[idx][1]][2],
-//                                                fUV[0][ nTex[ nVecTexPos[idx][5] ][1] ],
-//                                                fUV[1][ nTex[ nVecTexPos[idx][5] ][2] ]);
-                                                //fTex[nVecTexPos[idx][5]][0]/fXMax,
-                                                //fTex[nVecTexPos[idx][5]][1]/fYMax);
                 worldrenderer.pos(  dVec[nVecTexPos[idx][1]][0],
                                     dVec[nVecTexPos[idx][1]][1],
                                     dVec[nVecTexPos[idx][1]][2])
@@ -239,14 +212,6 @@ public class RenderBonfire extends Render
                              .endVertex();
 
                 col = nVertexColor[nVecTexPos[idx][2]];
-//                worldrenderer.setColorRGBA_F(fColor[col][0], fColor[col][1], fColor[col][2], fColor[col][3]);
-//                worldrenderer.addVertexWithUV(dVec[nVecTexPos[idx][2]][0],
-//                                                dVec[nVecTexPos[idx][2]][1],
-//                                                dVec[nVecTexPos[idx][2]][2],
-//                                                fUV[0][ nTex[ nVecTexPos[idx][6] ][1] ],
-//                                                fUV[1][ nTex[ nVecTexPos[idx][6] ][2] ]);
-                                                //fTex[nVecTexPos[idx][6]][0]/fXMax,
-                                                //fTex[nVecTexPos[idx][6]][1]/fYMax);
                 worldrenderer.pos(  dVec[nVecTexPos[idx][2]][0],
                                     dVec[nVecTexPos[idx][2]][1],
                                     dVec[nVecTexPos[idx][2]][2])
@@ -257,14 +222,6 @@ public class RenderBonfire extends Render
                              .endVertex();
 
                 col = nVertexColor[nVecTexPos[idx][3]];
-//                worldrenderer.setColorRGBA_F(fColor[col][0], fColor[col][1], fColor[col][2], fColor[col][3]);
-//                worldrenderer.addVertexWithUV(dVec[nVecTexPos[idx][3]][0],
-//                                                dVec[nVecTexPos[idx][3]][1],
-//                                                dVec[nVecTexPos[idx][3]][2],
-//                                                fUV[0][ nTex[ nVecTexPos[idx][7] ][1] ],
-//                                                fUV[1][ nTex[ nVecTexPos[idx][7] ][2] ]);
-                                                //fTex[nVecTexPos[idx][7]][0]/fXMax,
-                                                //fTex[nVecTexPos[idx][7]][1]/fYMax);
                 worldrenderer.pos(  dVec[nVecTexPos[idx][3]][0],
                                     dVec[nVecTexPos[idx][3]][1],
                                     dVec[nVecTexPos[idx][3]][2])
@@ -324,10 +281,6 @@ public class RenderBonfire extends Render
                 //1.縮小
                 GlStateManager.scale(fScaleFire, fScaleFire, 0.0F);
 
-//                worldrenderer.addVertexWithUV(-fX,        fY, fZ, fU1, fV1);
-//                worldrenderer.addVertexWithUV(-fX, 1.0F - fY, fZ, fU1, fV2);
-//                worldrenderer.addVertexWithUV( fX, 1.0F - fY, fZ, fU2, fV2);
-//                worldrenderer.addVertexWithUV( fX,        fY, fZ, fU2, fV1);
                 worldrenderer.pos(-fX,        fY, fZ).tex(fU1, fV1).normal(0f, 1f, 0f).endVertex();
                 worldrenderer.pos(-fX, 1.0F - fY, fZ).tex(fU1, fV2).normal(0f, 1f, 0f).endVertex();
                 worldrenderer.pos( fX, 1.0F - fY, fZ).tex(fU2, fV2).normal(0f, 1f, 0f).endVertex();
@@ -343,15 +296,7 @@ public class RenderBonfire extends Render
                 float fX = 0.5F;
                 float fY = 1.0F;
                 float fZ = 0.0F;
-    /*
-                float fUAlg = 0F;
-                if (idx % 2 == 0) { fUAlg = 16F; }
 
-                float fU1 =     (16F + fUAlg) / 512F;
-                float fU2 =  (31.99F + fUAlg) / 512F;
-                float fV1 =    128F / 256F;
-                float fV2 = 143.99F / 256F;
-    */
                 int nNo = idx % 2;
                 float fU1 = iconIndex[nNo].getMinU();
                 float fU2 = iconIndex[nNo].getMaxU();
@@ -371,10 +316,6 @@ public class RenderBonfire extends Render
                 //1.縮小
                 GlStateManager.scale(fScaleFire, fScaleFire, 0.0F);
 
-//                worldrenderer.addVertexWithUV(-fX,        fY, fZ, fU1, fV1);
-//                worldrenderer.addVertexWithUV(-fX, 1.0F - fY, fZ, fU1, fV2);
-//                worldrenderer.addVertexWithUV( fX, 1.0F - fY, fZ, fU2, fV2);
-//                worldrenderer.addVertexWithUV( fX,        fY, fZ, fU2, fV1);
                 worldrenderer.pos(-fX,        fY, fZ).tex(fU1, fV1).normal(0f, 1f, 0f).endVertex();
                 worldrenderer.pos(-fX, 1.0F - fY, fZ).tex(fU1, fV2).normal(0f, 1f, 0f).endVertex();
                 worldrenderer.pos( fX, 1.0F - fY, fZ).tex(fU2, fV2).normal(0f, 1f, 0f).endVertex();
@@ -393,9 +334,23 @@ public class RenderBonfire extends Render
      * ■バインドしたい画像リソース
      */
     @Override
-    protected ResourceLocation getEntityTexture(Entity entity)
+    protected ResourceLocation getEntityTexture(EntityBonfire entity)
     {
         return this.resource;
     }
 
+    /**
+     * ■RenderBonfireFactory
+     * @author yousui
+     *
+     */
+    @SideOnly(Side.CLIENT)
+    public static class Factory implements IRenderFactory<EntityBonfire>
+    {
+        @Override
+        public Render<? super EntityBonfire> createRenderFor(RenderManager manager)
+        {
+            return new RenderBonfire(manager);
+        }
+    }
 }

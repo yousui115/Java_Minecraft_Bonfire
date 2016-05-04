@@ -33,17 +33,18 @@ public class ItemBonfire extends Item
         //■ブロックの上面が対象
         if(facing != EnumFacing.UP) { return EnumActionResult.FAIL; }
 
+        //■Entity生成
+        EntityBonfire eb = new EntityBonfire(worldIn, pos.getX(), pos.getY()+1, pos.getZ());
+
+        //■生存可能条件の確認
+        if(eb.canStay() == false) { return EnumActionResult.FAIL; }
+
         if(!worldIn.isRemote)
         {
-            //■Entity生成
-            EntityBonfire eb = new EntityBonfire(worldIn, pos.getX(), pos.getY()+1, pos.getZ());
-
-            //■生存可能条件の確認
-            if(eb.canStay() == false) { return EnumActionResult.FAIL; }
-
             //■顕現
             worldIn.spawnEntityInWorld(eb);
         }
+
         stack.stackSize--;
 
         return EnumActionResult.SUCCESS;

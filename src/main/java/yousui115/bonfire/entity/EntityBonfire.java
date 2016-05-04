@@ -9,7 +9,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.init.SoundEvents;
-import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
@@ -127,15 +126,7 @@ public class EntityBonfire extends Entity
             //■SE（ぱちぱち）
             if (tickFire % 20 == 0)
             {
-                //(x, y, z, filename, volume, pitch)
-//                worldObj.playSoundEffect((float)posX + 0.5F, (float)posY + 0.5F, (float)posZ + 0.5F,
-//                                         "fire.fire",
-//                                         getFireScale(stateFire), rand.nextFloat() * 0.7F + 0.3F);
-                this.worldObj.playSound((float)posX + 0.5F, (float)posY + 0.5F, (float)posZ + 0.5F,
-                                        SoundEvents.block_fire_ambient,
-                                        SoundCategory.BLOCKS,
-                                        1.0F + rand.nextFloat(),
-                                        rand.nextFloat() * 0.7F + 0.3F, false);
+                soundFireAmbient();
             }
 
             //■パーティクル（煙）
@@ -189,7 +180,7 @@ public class EntityBonfire extends Entity
             }
 
             //■ボッ！
-            soundIgnition();
+            soundThrow();
 //            worldObj.playSoundEffect(posX, posY, posZ,
 //                    "mob.ghast.fireball",
 //                    1.0F, rand.nextFloat() * 0.4F + 0.8F);
@@ -375,11 +366,8 @@ public class EntityBonfire extends Entity
     {
         boolean isInteract = false;
 
-//        ItemStack itemstack = playerIn.getCurrentEquippedItem();
-        ItemStack itemstack = playerIn.getItemStackFromSlot(handIn == EnumHand.MAIN_HAND ? EntityEquipmentSlot.MAINHAND : EntityEquipmentSlot.OFFHAND);
-
-        //■何も持ってないプレイヤーなど不要！
-        if (itemstack == null) { return isInteract; }
+        //■何も持ってない(もしくは何らかの理由で0個のアイテムを持つ)プレイヤーなどフヨウラ！
+        if (stackIn == null || stackIn.stackSize <= 0) { return isInteract; }
 
         //■でーたうぉっちゃー 取得
         this.getDataWatcherLocal();
@@ -388,43 +376,82 @@ public class EntityBonfire extends Entity
 
         //■アイテムによる処理分岐
         // ▼点火(火打ち石持ってる かつ 燃焼間隔が0
-        if (itemstack.getItem().equals(Items.flint_and_steel) &&
-            itemstack.stackSize > 0 &&
+        if (stackIn.getItem().equals(Items.flint_and_steel) &&
             stateFire.getInterval(isReuse) == 0)
         {
             //■イグニッション！
             this.startBurning();
 
             //■カチッ！
-//            worldObj.playSoundEffect(posX + 0.5D, posY + 0.5D, posZ + 0.5D, "fire.ignite", 1.0F, rand.nextFloat() * 0.4F + 0.8F);
             soundIgnition();
 
-//            playerIn.swingItem();
             playerIn.swingArm(handIn);
 
             //■アイテムへの使用ダメージ
-            itemstack.damageItem(1, playerIn);
-//            if (itemstack.stackSize <= 0) {
-//                playerIn.destroyCurrentEquippedItem();
-//            }
+            stackIn.damageItem(1, playerIn);
 
+            //■false で返す。
             //isInteract = true;
         }
         // ▼消化
-        else if (itemstack.getItem().equals(Items.water_bucket)  &&
+        else if (stackIn.getItem().equals(Items.water_bucket)  &&
                  stateFire.isFire())
         {
             //■消火
             doFireFighting(stateFire);
 
-            //■ジュー！
-//            worldObj.playSoundEffect(posX, posY, posZ, "random.fizz", 0.5F, 3.0F);
-            soundFizz();
-
 //            playerIn.swingItem();
             playerIn.swingArm(handIn);
 
             isInteract = true;
+        }
+        // ▼食べ物
+        else if (EntityFood.canBroilFood(stackIn))
+        {
+            double dDiffX = this.posX - playerIn.posX;
+            double dDiffZ = this.posZ - playerIn.posZ;
+            double dPosX = this.posX;
+            double dPosZ = this.posZ;
+            int nPlayerDir = 0; //Bonfireから見てのPlayerの方向
+            double dTheta = Math.atan2(dDiffX, dDiffZ) + Math.PI; //0 ~ 6.28...
+
+            double dTmp = Math.PI/4.0;
+            if (dTmp <= dTheta && dTheta < dTmp*3) { nPlayerDir = 0; }
+            else if (dTmp*3 <= dTheta && dTheta < dTmp*5) { nPlayerDir = 1; }
+            else if (dTmp*5 <= dTheta && dTheta < dTmp*7) { nPlayerDir = 2; }
+            else { nPlayerDir = 3; }
+
+            List<Entity> entities = worldObj.getEntitiesWithinAABBExcludingEntity(this, this.getEntityBoundingBox());
+            int nDir = 0;
+            int idx;
+            for (idx = 0; idx < entities.size(); idx++)
+            {
+                if (entities.get(idx) instanceof EntityFood)
+                {
+                    EntityFood food = (EntityFood)entities.get(idx);
+                    nDir |= 0x1 << food.getDirection();
+                }
+            }
+
+            for (idx = 0; idx < 4; idx++)
+            {
+                int dir = (nPlayerDir + idx) % 4;
+                int nBit = nDir & (0x1 << dir);
+                if (nBit == 0)
+                {
+                    //TODO:配置可能
+                    if (!this.worldObj.isRemote)
+                    {
+                        this.worldObj.spawnEntityInWorld(new EntityFood(this.worldObj, this.posX, this.posY, this.posZ, dir, stackIn));
+                    }
+                    if (--stackIn.stackSize <= 0)
+                    {
+                        //playerIn.destroyCurrentEquippedItem();
+                    }
+                    isInteract = true;
+                    break;
+                }
+            }
         }
 
         //■でーたうぉっちゃー 更新
@@ -499,13 +526,36 @@ public class EntityBonfire extends Entity
     }
 
     /**
+     * ■火の燃える音
+     */
+    protected void soundFireAmbient()
+    {
+        this.worldObj.playSound((float)posX + 0.5F, (float)posY + 0.5F, (float)posZ + 0.5F,
+                SoundEvents.block_fire_ambient,
+                SoundCategory.BLOCKS,
+                1.0F + rand.nextFloat(),
+                rand.nextFloat() * 0.7F + 0.3F, false);
+    }
+
+    /**
      * ■着火音
      */
     protected void soundIgnition()
     {
         this.worldObj.playSound(posX, posY, posZ,
+                SoundEvents.item_flintandsteel_use,
+                SoundCategory.BLOCKS,
+                1.0F,
+                rand.nextFloat() * 0.4F + 0.8F, false);
+    }
+    /**
+     * ■燃料をくべた音
+     */
+    protected void soundThrow()
+    {
+        this.worldObj.playSound(posX, posY, posZ,
                 SoundEvents.entity_ghast_shoot,
-                SoundCategory.AMBIENT,
+                SoundCategory.BLOCKS,
                 1.0F,
                 rand.nextFloat() * 0.4F + 0.8F, false);
     }
@@ -710,15 +760,15 @@ public class EntityBonfire extends Entity
      */
     public enum EnumWoodState
     {
-        WOOD        (  0, false, false, new ItemStack(Bonfire.itemBonfire)),  //白い薪々
-        WOOD_RE     (  0, false, false, new ItemStack(Items.stick, 2)),
-        IGNITION    ( 100, true, false, new ItemStack(Bonfire.itemBonfire)), //点火
-        IGNITION_RE ( 100, true, false, new ItemStack(Items.stick, 2)),
-        BURST_WR    ( 700, true, false, new ItemStack(Items.stick, 2)),
-        BURST_WR_RE ( 700, true, false, new ItemStack(Items.stick, 2)),
-        BURST_RB    (2000, true, true, new ItemStack(Items.coal, 1, 1)),
-        BURST_B     ( 500, true, true, new ItemStack(Items.coal, 1, 1)),
-        CHARCOAL    (  1, false, false, new ItemStack(Items.coal, 1, 1));     //薪々、完全なる黒へ
+        WOOD        (   0, false, false, new ItemStack(Bonfire.itemBonfire)),  //白い薪々
+        WOOD_RE     (   0, false, false, new ItemStack(Items.stick, 2)),
+        IGNITION    ( 100,  true, false, new ItemStack(Bonfire.itemBonfire)), //点火
+        IGNITION_RE ( 100,  true, false, new ItemStack(Items.stick, 2)),
+        BURST_WR    ( 700,  true, false, new ItemStack(Items.stick, 2)),
+        BURST_WR_RE ( 700,  true, false, new ItemStack(Items.stick, 2)),
+        BURST_RB    (2000,  true,  true, new ItemStack(Items.coal, 1, 1)),
+        BURST_B     ( 500,  true,  true, new ItemStack(Items.coal, 1, 1)),
+        CHARCOAL    (   1, false, false, new ItemStack(Items.coal, 1, 1));     //薪々、完全なる黒へ
 
         private final int interval;
         private final boolean isFire;
