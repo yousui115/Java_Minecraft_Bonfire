@@ -1,11 +1,11 @@
-#[MinecraftMod] 焚き火 [MC1.9]<br>
+#[MinecraftMod] 焚き火 [MC1.10.2]<br>
 
-##■DL (v1)<br>
-https://www.dropbox.com/s/1uq56oao40r8jam/bonfire_M190_F1865_v1.jar?dl=0<br>
+##■DL (M1102_F2099_v1)<br>
+https://www.dropbox.com/s/8wiyv47ox2xzlps/Bonfire_M1102_F2099_v1.jar?dl=0<br>
 
 ##■動作環境<br>
-Minecraft 1.9<br>
-Forge1865<br>
+Minecraft 1.10.2<br>
+Forge2099<br>
 
 ##■はじめに<br>
 * このModは、焚き火を追加するModです。
@@ -16,7 +16,7 @@ Forge1865<br>
 
 ##■レシピ<br>
 必要素材 : 棒 x4<br>
-上記素材をグロウストーンダストからグロウストーンをクラフトする要領で配置する。<br>
+上記素材を、糸から羊毛をクラフトする要領で配置する。<br>
 
 ##■特性<br>
 ###▼焚き火<br>
