@@ -112,7 +112,7 @@ public class EntityBonfire extends Entity
             }
             else
             {
-                setBlock(Blocks.air);
+                setBlock(Blocks.AIR);
             }
 
             //■ロールバック処理
@@ -165,9 +165,9 @@ public class EntityBonfire extends Entity
             int nTime = 0;
 
             //■棒, 紙, 本 は燃える
-            if (itemstack.getItem().equals(Items.stick)) { nTime = 1000; }
-            else if (itemstack.getItem().equals(Items.paper)) { nTime = 100; }
-            else if (itemstack.getItem().equals(Items.book)) { nTime = 1000; }
+            if (itemstack.getItem().equals(Items.STICK)) { nTime = 1000; }
+            else if (itemstack.getItem().equals(Items.PAPER)) { nTime = 100; }
+            else if (itemstack.getItem().equals(Items.BOOK)) { nTime = 1000; }
             else { continue; }
 
             //■投入された数だけロールバック時間を加算
@@ -221,7 +221,7 @@ public class EntityBonfire extends Entity
     protected EnumWoodState doFireFighting(EnumWoodState stateFire)
     {
         //■自作光源ブロックは消失
-        setBlock(Blocks.air);
+        setBlock(Blocks.AIR);
 
         //■消火時の状態遷移先を取得
         stateFire = stateFire.getFireFightState();
@@ -278,7 +278,7 @@ public class EntityBonfire extends Entity
         //■設置場所にBonfireBlock以外のブロックがあったらfalse
         BlockPos pos = new BlockPos(nX, nY, nZ);
         Block block = worldObj.getBlockState(pos).getBlock();
-        if (Block.isEqualTo(block, Blocks.air) == false &&
+        if (Block.isEqualTo(block, Blocks.AIR) == false &&
             Block.isEqualTo(block, Bonfire.blockLight) == false)
         { return false; }
 
@@ -287,7 +287,7 @@ public class EntityBonfire extends Entity
         block = worldObj.getBlockState(pos).getBlock();
 //        if (Block.isEqualTo(block, Blocks.air) ||
 //            block.isSolidFullCube() == false)
-        if (Block.isEqualTo(block, Blocks.air))
+        if (Block.isEqualTo(block, Blocks.AIR))
         { return false; }
 
         //■そのブロックに当り判定がない とfalse
@@ -321,7 +321,7 @@ public class EntityBonfire extends Entity
         if (!worldObj.isRemote)
         {
             //■ブロックがあれば消滅させる
-            this.setBlock(Blocks.air);
+            this.setBlock(Blocks.AIR);
 
             //■状態に応じたドロップアイテムを顕現させる
             worldObj.spawnEntityInWorld(new EntityItem(worldObj, posX, posY, posZ, state.getItemStack()));
@@ -349,7 +349,7 @@ public class EntityBonfire extends Entity
         if (Block.isEqualTo(block, blockIn)) { return; }
 
         //■空、もしくは自作光源ブロックなら、置き換え
-        if (Block.isEqualTo(block, Blocks.air) || Block.isEqualTo(block, Bonfire.blockLight))
+        if (Block.isEqualTo(block, Blocks.AIR) || Block.isEqualTo(block, Bonfire.blockLight))
         {
             //worldObj.notifyBlockOfStateChange(pos, blockIn);
             worldObj.setBlockState(pos, blockIn.getDefaultState());
@@ -376,7 +376,7 @@ public class EntityBonfire extends Entity
 
         //■アイテムによる処理分岐
         // ▼点火(火打ち石持ってる かつ 燃焼間隔が0
-        if (stackIn.getItem().equals(Items.flint_and_steel) &&
+        if (stackIn.getItem().equals(Items.FLINT_AND_STEEL) &&
             stateFire.getInterval(isReuse) == 0)
         {
             //■イグニッション！
@@ -394,7 +394,7 @@ public class EntityBonfire extends Entity
             //isInteract = true;
         }
         // ▼消化
-        else if (stackIn.getItem().equals(Items.water_bucket)  &&
+        else if (stackIn.getItem().equals(Items.WATER_BUCKET)  &&
                  stateFire.isFire())
         {
             //■消火
@@ -531,7 +531,7 @@ public class EntityBonfire extends Entity
     protected void soundFireAmbient()
     {
         this.worldObj.playSound((float)posX + 0.5F, (float)posY + 0.5F, (float)posZ + 0.5F,
-                SoundEvents.block_fire_ambient,
+                SoundEvents.BLOCK_FIRE_AMBIENT,
                 SoundCategory.BLOCKS,
                 1.0F + rand.nextFloat(),
                 rand.nextFloat() * 0.7F + 0.3F, false);
@@ -543,7 +543,7 @@ public class EntityBonfire extends Entity
     protected void soundIgnition()
     {
         this.worldObj.playSound(posX, posY, posZ,
-                SoundEvents.item_flintandsteel_use,
+                SoundEvents.ITEM_FLINTANDSTEEL_USE,
                 SoundCategory.BLOCKS,
                 1.0F,
                 rand.nextFloat() * 0.4F + 0.8F, false);
@@ -554,9 +554,9 @@ public class EntityBonfire extends Entity
     protected void soundThrow()
     {
         this.worldObj.playSound(posX, posY, posZ,
-                SoundEvents.entity_ghast_shoot,
+                SoundEvents.ENTITY_GHAST_SHOOT,
                 SoundCategory.BLOCKS,
-                1.0F,
+                0.5F,
                 rand.nextFloat() * 0.4F + 0.8F, false);
     }
 
@@ -566,7 +566,7 @@ public class EntityBonfire extends Entity
     protected void soundFizz()
     {
         this.worldObj.playSound(posX, posY, posZ,
-                SoundEvents.block_fire_extinguish,
+                SoundEvents.BLOCK_FIRE_EXTINGUISH,
                 SoundCategory.BLOCKS,
                 0.5F,
                 2.6F + (rand.nextFloat() - rand.nextFloat()) * 0.8F, false);
@@ -709,8 +709,8 @@ public class EntityBonfire extends Entity
     {
 //        this.dataWatcher.addObject(10, new Integer(0));     // tickFire
 //        this.dataWatcher.addObject(11, new Integer(0));     // isReuse
-        this.dataWatcher.register(TICK_FIRE, Integer.valueOf(0));
-        this.dataWatcher.register(REUSE,     Boolean.FALSE);
+        this.dataManager.register(TICK_FIRE, Integer.valueOf(0));
+        this.dataManager.register(REUSE,     Boolean.FALSE);
     }
 
     public void getDataWatcherLocal()
@@ -732,26 +732,26 @@ public class EntityBonfire extends Entity
     public int getTickFire()
     {
 //        return this.dataWatcher.getWatchableObjectInt(10);
-        return dataWatcher.get(TICK_FIRE);
+        return dataManager.get(TICK_FIRE);
     }
 
     public void setTickFire()
     {
 //        this.dataWatcher.updateObject(10, this.tickFire);
-        dataWatcher.set(TICK_FIRE, tickFire);
+        dataManager.set(TICK_FIRE, tickFire);
 //        dataWatcher.setDirty(TICK_FIRE);
     }
 
     public boolean getIsReuse()
     {
 //        return this.dataWatcher.getWatchableObjectInt(11) == 1;
-        return dataWatcher.get(REUSE);
+        return dataManager.get(REUSE);
     }
 
     public void setIsReuse()
     {
 //        this.dataWatcher.updateObject(11, isReuse ? 1 : 0);
-        dataWatcher.set(REUSE, isReuse);
+        dataManager.set(REUSE, isReuse);
 //        dataWatcher.setDirty(REUSE);
     }
 
@@ -761,14 +761,14 @@ public class EntityBonfire extends Entity
     public enum EnumWoodState
     {
         WOOD        (   0, false, false, new ItemStack(Bonfire.itemBonfire)),  //白い薪々
-        WOOD_RE     (   0, false, false, new ItemStack(Items.stick, 2)),
+        WOOD_RE     (   0, false, false, new ItemStack(Items.STICK, 2)),
         IGNITION    ( 100,  true, false, new ItemStack(Bonfire.itemBonfire)), //点火
-        IGNITION_RE ( 100,  true, false, new ItemStack(Items.stick, 2)),
-        BURST_WR    ( 700,  true, false, new ItemStack(Items.stick, 2)),
-        BURST_WR_RE ( 700,  true, false, new ItemStack(Items.stick, 2)),
-        BURST_RB    (2000,  true,  true, new ItemStack(Items.coal, 1, 1)),
-        BURST_B     ( 500,  true,  true, new ItemStack(Items.coal, 1, 1)),
-        CHARCOAL    (   1, false, false, new ItemStack(Items.coal, 1, 1));     //薪々、完全なる黒へ
+        IGNITION_RE ( 100,  true, false, new ItemStack(Items.STICK, 2)),
+        BURST_WR    ( 700,  true, false, new ItemStack(Items.STICK, 2)),
+        BURST_WR_RE ( 700,  true, false, new ItemStack(Items.STICK, 2)),
+        BURST_RB    (2000,  true,  true, new ItemStack(Items.COAL, 1, 1)),
+        BURST_B     ( 500,  true,  true, new ItemStack(Items.COAL, 1, 1)),
+        CHARCOAL    (   1, false, false, new ItemStack(Items.COAL, 1, 1));     //薪々、完全なる黒へ
 
         private final int interval;
         private final boolean isFire;

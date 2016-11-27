@@ -30,7 +30,7 @@ public class Bonfire
     //■固定文字列
     public static final String MOD_ID = "bonfire";
     public static final String MOD_DOMAIN = "yousui115." + MOD_ID;
-    public static final String VERSION = "1.0";
+    public static final String VERSION = "M1102_F2099_v1";
 
     //■インスタント
     @Mod.Instance(MOD_ID)
@@ -75,7 +75,7 @@ public class Bonfire
 
         // ▼調理食材(おいしそう)
         itemCookedFood = new ItemFoodB(4, 0.6f, false)
-                               .setPotionEffect(new PotionEffect(MobEffects.saturation, 600, 0), 0.8F)
+                               .setPotionEffect(new PotionEffect(MobEffects.SATURATION, 600, 0), 0.8F)
                                .setUnlocalizedName(nameCookedFood)
                                .setHasSubtypes(true);
         rlCookedFood = new ResourceLocation(MOD_ID, nameCookedFood);
@@ -83,14 +83,14 @@ public class Bonfire
 
         // ▼調理食材(まずそう)
         itemBurntFood = new ItemFoodB(2, 0.1f, false)
-                                .setPotionEffect(new PotionEffect(MobEffects.hunger, 300, 0), 0.8f)
+                                .setPotionEffect(new PotionEffect(MobEffects.HUNGER, 300, 0), 0.8f)
                                 .setUnlocalizedName(nameBurntFood)
                                 .setHasSubtypes(true);
         rlBurntFood = new ResourceLocation(MOD_ID, nameBurntFood);
         GameRegistry.register(itemBurntFood, rlBurntFood);
 
         //■ブロックの生成と登録
-        blockLight = new BlockLight(Material.circuits)
+        blockLight = new BlockLight(Material.CIRCUITS)
                          .setHardness(0.3F)
                          .setLightLevel(1.0F)
                          .setUnlocalizedName(nameLight)
@@ -123,7 +123,7 @@ public class Bonfire
         GameRegistry.addRecipe(new ItemStack(Bonfire.itemBonfire),
                                "##",
                                "##",
-                               '#', Items.stick
+                               '#', Items.STICK
                               );
 
 //        //■レンダラ登録
@@ -139,13 +139,12 @@ public class Bonfire
     {
         //TODO:ItemFoodBのEnumと連携させよう。でないと表示が狂う可能性あり
         //■焚き火での調理可能食材情報登録(順番厳守)
-        // ▼ここで食材(生・おいしそう・まずそう)を設定してやれば、なんでも焼ける
-        EntityFood.registItemState(Items.beef,     0, Bonfire.itemCookedFood, 0, Bonfire.itemBurntFood, 0);
-        EntityFood.registItemState(Items.porkchop, 0, Bonfire.itemCookedFood, 1, Bonfire.itemBurntFood, 1);
-        EntityFood.registItemState(Items.chicken,  0, Bonfire.itemCookedFood, 2, Bonfire.itemBurntFood, 2);
-        EntityFood.registItemState(Items.mutton,   0, Bonfire.itemCookedFood, 3, Bonfire.itemBurntFood, 3);
-        EntityFood.registItemState(Items.rabbit,   0, Bonfire.itemCookedFood, 4, Bonfire.itemBurntFood, 4);
-        EntityFood.registItemState(Items.fish, ItemFishFood.FishType.COD.getMetadata(),    Bonfire.itemCookedFood, 5, Bonfire.itemBurntFood, 5);
-        EntityFood.registItemState(Items.fish, ItemFishFood.FishType.SALMON.getMetadata(), Bonfire.itemCookedFood, 6, Bonfire.itemBurntFood, 6);
+        EntityFood.registItemState(Items.BEEF,     0, Bonfire.itemCookedFood, 0, Bonfire.itemBurntFood, 0);
+        EntityFood.registItemState(Items.PORKCHOP, 0, Bonfire.itemCookedFood, 1, Bonfire.itemBurntFood, 1);
+        EntityFood.registItemState(Items.CHICKEN,  0, Bonfire.itemCookedFood, 2, Bonfire.itemBurntFood, 2);
+        EntityFood.registItemState(Items.MUTTON,   0, Bonfire.itemCookedFood, 3, Bonfire.itemBurntFood, 3);
+        EntityFood.registItemState(Items.RABBIT,   0, Bonfire.itemCookedFood, 4, Bonfire.itemBurntFood, 4);
+        EntityFood.registItemState(Items.FISH, ItemFishFood.FishType.COD.getMetadata(),    Bonfire.itemCookedFood, 5, Bonfire.itemBurntFood, 5);
+        EntityFood.registItemState(Items.FISH, ItemFishFood.FishType.SALMON.getMetadata(), Bonfire.itemCookedFood, 6, Bonfire.itemBurntFood, 6);
     }
 }

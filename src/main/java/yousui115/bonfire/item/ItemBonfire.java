@@ -20,7 +20,7 @@ public class ItemBonfire extends Item
 {
     public ItemBonfire()
     {
-        this.setCreativeTab(CreativeTabs.tabMaterials);
+        this.setCreativeTab(CreativeTabs.MATERIALS);
     }
 
     /**

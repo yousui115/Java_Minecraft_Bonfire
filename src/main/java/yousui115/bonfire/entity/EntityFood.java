@@ -233,7 +233,7 @@ public class EntityFood extends Entity
         }
 
         //■予防線
-        return new ItemStack(Items.stick);
+        return new ItemStack(Items.STICK);
     }
 
     public static boolean canBroilFood(ItemStack stackIn)
@@ -260,14 +260,13 @@ public class EntityFood extends Entity
                         new ItemStack(itemBurnt,  1, sub_Burnt));
     }
 
-    public static void registItemState(ItemStack ...arg)
+    public static void registItemState(ItemStack stackRaw, ItemStack stackCooked, ItemStack stackBurnt)
     {
-        if (arg.length != 3) { return; }
-        for (ItemStack stack : arg) { if (stack == null) { return; } }
+        if (stackRaw == null || stackCooked == null || stackBurnt == null) { return; }
 
-        List<ItemStack> listStacks = Lists.newArrayList(arg[0], arg[1], arg[2]);
+        List<ItemStack> listStacks = Lists.newArrayList(stackRaw, stackCooked, stackBurnt);
 
-        mapFoodState.put(Pair.of(arg[0].getItem().delegate, arg[0].getMetadata()), listStacks);
+        mapFoodState.put(Pair.of(stackRaw.getItem().delegate, stackRaw.getMetadata()), listStacks);
     }
     /* ======================================== setter, getter =====================================*/
 

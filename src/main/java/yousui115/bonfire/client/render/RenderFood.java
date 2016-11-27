@@ -29,7 +29,7 @@ public class RenderFood extends Render<EntityFood>
     {
         super(renderManager);
 
-        stick = new ItemStack(Items.stick);
+        stick = new ItemStack(Items.STICK);
     }
 
     /**
@@ -111,7 +111,7 @@ public class RenderFood extends Render<EntityFood>
     @Override
     protected ResourceLocation getEntityTexture(EntityFood foodIn)
     {
-        return TextureMap.locationBlocksTexture;
+        return TextureMap.LOCATION_BLOCKS_TEXTURE;
     }
 
     /* ======================================== Factory =====================================*/
