@@ -23,6 +23,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import yousui115.bonfire.Bonfire;
+import yousui115.bonfire.item.ItemPot;
 
 public class EntityBonfire extends Entity
 {
@@ -405,8 +406,10 @@ public class EntityBonfire extends Entity
 
             isInteract = true;
         }
-        // ▼食べ物
-        else if (EntityFood.canBroilFood(stackIn))
+        // ▼食べ物 又は ポット(空以外)
+        else if (EntityFood.canBroilFood(stackIn) ||
+                 (stackIn.getItem() instanceof ItemPot &&
+                  stackIn.getMetadata() != 0))
         {
             double dDiffX = this.posX - playerIn.posX;
             double dDiffZ = this.posZ - playerIn.posZ;
@@ -426,10 +429,10 @@ public class EntityBonfire extends Entity
             int idx;
             for (idx = 0; idx < entities.size(); idx++)
             {
-                if (entities.get(idx) instanceof EntityFood)
+                if (entities.get(idx) instanceof EntityBroilItem)
                 {
-                    EntityFood food = (EntityFood)entities.get(idx);
-                    nDir |= 0x1 << food.getDirection();
+                    EntityBroilItem broilItem = (EntityBroilItem)entities.get(idx);
+                    nDir |= 0x1 << broilItem.getDirection();
                 }
             }
 
@@ -442,7 +445,16 @@ public class EntityBonfire extends Entity
                     //TODO:配置可能
                     if (!this.worldObj.isRemote)
                     {
-                        this.worldObj.spawnEntityInWorld(new EntityFood(this.worldObj, this.posX, this.posY, this.posZ, dir, stackIn));
+                        if (stackIn.getItem() instanceof ItemPot)
+                        {
+                            //■ポット
+                            this.worldObj.spawnEntityInWorld(new EntityPot(this.worldObj, this.posX, this.posY, this.posZ, dir, stackIn));
+                        }
+                        else
+                        {
+                            //■食べ物
+                            this.worldObj.spawnEntityInWorld(new EntityFood(this.worldObj, this.posX, this.posY, this.posZ, dir, stackIn));
+                        }
                     }
                     if (--stackIn.stackSize <= 0)
                     {

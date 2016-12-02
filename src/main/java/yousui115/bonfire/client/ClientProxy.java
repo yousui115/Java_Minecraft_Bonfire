@@ -17,9 +17,12 @@ import yousui115.bonfire.Bonfire;
 import yousui115.bonfire.CommonProxy;
 import yousui115.bonfire.client.render.RenderBonfire;
 import yousui115.bonfire.client.render.RenderFood;
+import yousui115.bonfire.client.render.RenderPot;
 import yousui115.bonfire.entity.EntityBonfire;
 import yousui115.bonfire.entity.EntityFood;
+import yousui115.bonfire.entity.EntityPot;
 import yousui115.bonfire.item.ItemFoodB;
+import yousui115.bonfire.item.ItemPot;
 
 @SideOnly(Side.CLIENT)
 public class ClientProxy extends CommonProxy
@@ -52,6 +55,25 @@ public class ClientProxy extends CommonProxy
             ModelLoader.setCustomModelResourceLocation(Bonfire.itemBurntFood,  idx, mrlCooked);
         }
 
+        // ▼ポット
+        ResourceLocation[] rlPots = new ResourceLocation[ItemPot.enumPots.length];
+        for (int idx = 0; idx < ItemPot.enumPots.length; idx++)
+        {
+            rlPots[idx] = new ResourceLocation(Bonfire.MOD_ID, ItemPot.enumPots[idx].modelName);
+        }
+
+        ModelBakery.registerItemVariants(Bonfire.itemPot, rlPots);
+
+        for (int idx = 0; idx < rlPots.length; idx++)
+        {
+            ModelResourceLocation mrlPot = new ModelResourceLocation(rlPots[idx], "inventory");
+            ModelLoader.setCustomModelResourceLocation(Bonfire.itemPot, idx, mrlPot);
+        }
+
+        // ▼水筒
+        ModelResourceLocation mrlWBottle = new ModelResourceLocation(Bonfire.rlWBottle, "inventory");
+        ModelLoader.setCustomModelResourceLocation(Bonfire.itemWBottle, 0, mrlWBottle);
+
         //■ブロックアイテム
         ModelLoader.setCustomModelResourceLocation(Bonfire.itemBlockLight, 0, new ModelResourceLocation(new ResourceLocation(Bonfire.MOD_ID, Bonfire.nameLight), "inventory"));
     }
@@ -64,6 +86,7 @@ public class ClientProxy extends CommonProxy
     {
         RenderingRegistry.registerEntityRenderingHandler(EntityBonfire.class, new RenderBonfire.Factory());
         RenderingRegistry.registerEntityRenderingHandler(EntityFood.class,    new RenderFood.Factory());
+        RenderingRegistry.registerEntityRenderingHandler(EntityPot.class,     new RenderPot.Factory());
     }
 
     /**

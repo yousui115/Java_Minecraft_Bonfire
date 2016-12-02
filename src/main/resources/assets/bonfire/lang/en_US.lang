@@ -17,5 +17,11 @@ item.bf_burnt_food.rabbit.name=burnt rabbit!
 item.bf_burnt_food.cod.name=burnt cod!
 item.bf_burnt_food.salmon.name=burnt salmon!
 
+item.bf_pot.empty.name=Pot (Empty)
+item.bf_pot.water.name=Pot (Water)
+item.bf_pot.boiled.name=Pot (Boiled)
+
+item.bf_water_bottle.name=Water Bottle
+
 tile.bf_blocklight.name=Don't touch me!
 

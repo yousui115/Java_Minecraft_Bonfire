@@ -2,6 +2,8 @@ package yousui115.bonfire;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
+import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.init.MobEffects;
 import net.minecraft.item.Item;
@@ -10,6 +12,7 @@ import net.minecraft.item.ItemFishFood;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.SidedProxy;
@@ -21,8 +24,12 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 import yousui115.bonfire.block.BlockLight;
 import yousui115.bonfire.entity.EntityBonfire;
 import yousui115.bonfire.entity.EntityFood;
+import yousui115.bonfire.entity.EntityPot;
 import yousui115.bonfire.item.ItemBonfire;
 import yousui115.bonfire.item.ItemFoodB;
+import yousui115.bonfire.item.ItemPot;
+import yousui115.bonfire.item.ItemWBottle;
+import yousui115.bonfire.item.RecipesWBottle;
 
 @Mod(modid = Bonfire.MOD_ID, version = Bonfire.VERSION, useMetadata = true)
 public class Bonfire
@@ -41,23 +48,41 @@ public class Bonfire
     public static CommonProxy proxy;
 
     //■追加アイテム
+    // ▼焚き火
     public static Item itemBonfire;
     public static String nameBonfire = "bf_bonfire";
     public static ResourceLocation rlBonfire;
 
+    // ▼食料（おいしそう）
     public static Item itemCookedFood;
     public static String nameCookedFood = "bf_cooked_food";
     public static ResourceLocation rlCookedFood;
 
+    // ▼食料（まずそう）
     public static Item itemBurntFood;
     public static String nameBurntFood = "bf_burnt_food";
     public static ResourceLocation rlBurntFood;
+
+    // ▼ポット
+    public static Item itemPot;
+    public static String namePot = "bf_pot";
+    public static ResourceLocation rlPot;
+
+    // ▼水筒
+    public static Item itemWBottle;
+    public static String nameWBottle = "bf_water_bottle";
+    public static ResourceLocation rlWBottle;
 
     //■追加ブロック
     public static Block blockLight;
     public static String nameLight = "bf_blocklight";
 //    public static ResourceLocation rlLight;
     public static Item itemBlockLight;
+
+    //TODO:ここで持つべきか否か
+    //■効果音
+    public static SoundEvent Gutsu;
+    public static SoundEvent Kata;
 
     /**
      * ■初期化処理（前処理）
@@ -69,7 +94,8 @@ public class Bonfire
         //■アイテムの生成と登録
         // ▼焚き火
         itemBonfire = new ItemBonfire()
-                          .setUnlocalizedName(nameBonfire);
+                          .setUnlocalizedName(nameBonfire)
+                          .setCreativeTab(CreativeTabs.MATERIALS);
         rlBonfire = new ResourceLocation(MOD_ID, nameBonfire);
         GameRegistry.register(itemBonfire, rlBonfire);
 
@@ -89,6 +115,24 @@ public class Bonfire
         rlBurntFood = new ResourceLocation(MOD_ID, nameBurntFood);
         GameRegistry.register(itemBurntFood, rlBurntFood);
 
+        // ▼ポット
+        itemPot = new ItemPot()
+                        .setUnlocalizedName(namePot)
+                        .setMaxStackSize(1)
+                        .setCreativeTab(CreativeTabs.MATERIALS)
+                        .setHasSubtypes(true).setContainerItem(itemPot);
+        rlPot = new ResourceLocation(MOD_ID, namePot);
+        GameRegistry.register(itemPot, rlPot);
+
+        // ▼水筒
+        itemWBottle = new ItemWBottle()
+                            .setUnlocalizedName(nameWBottle)
+                            .setMaxStackSize(1)
+                            .setMaxDamage(100)
+                            .setCreativeTab(CreativeTabs.FOOD);
+        rlWBottle = new ResourceLocation(MOD_ID, nameWBottle);
+        GameRegistry.register(itemWBottle, rlWBottle);
+
         //■ブロックの生成と登録
         blockLight = new BlockLight(Material.CIRCUITS)
                          .setHardness(0.3F)
@@ -103,6 +147,7 @@ public class Bonfire
         //■Entityの登録
         EntityRegistry.registerModEntity(EntityBonfire.class, "EntityBonfire", 0, this, 250, 5, false);
         EntityRegistry.registerModEntity(EntityFood.class,    "EntityFood",    1, this, 250, 5, false);
+        EntityRegistry.registerModEntity(EntityPot.class,     "EntityPot",     2, this, 250, 5, false);
 
         //■モデル登録
         proxy.registerModels();
@@ -120,11 +165,39 @@ public class Bonfire
     public void init(FMLInitializationEvent event)
     {
         //■レシピ登録
+        // ▼焚き火
         GameRegistry.addRecipe(new ItemStack(Bonfire.itemBonfire),
                                "##",
                                "##",
                                '#', Items.STICK
                               );
+
+        // ▼ポット
+        GameRegistry.addRecipe(new ItemStack(Bonfire.itemPot, 1, 0),
+                " # ",
+                " #w",
+                "## ",
+                '#', Items.IRON_INGOT,
+                'w', Items.STICK
+               );
+
+        // ▼ポット（水入り）
+        GameRegistry.addShapelessRecipe(new ItemStack(Bonfire.itemPot, 1, 1),
+                                        new ItemStack(Bonfire.itemPot, 1, 0),
+                                        new ItemStack(Items.WATER_BUCKET));
+
+        // ▼水筒
+        ItemStack wbottle = new ItemStack(Bonfire.itemWBottle);
+        wbottle.setItemDamage(99);
+        GameRegistry.addRecipe(wbottle ,
+                "w#",
+                "##",
+                'w', Blocks.PLANKS,
+                '#', Items.LEATHER
+               );
+
+        // ▼水筒への水補充
+        GameRegistry.addRecipe(new RecipesWBottle());
 
 //        //■レンダラ登録
 //        proxy.registerRenderers();
@@ -132,6 +205,9 @@ public class Bonfire
         //■アイテム色の登録
         proxy.registerItemColor();
 
+        //■効果音の登録
+        Gutsu = new SoundEvent(new ResourceLocation(this.MOD_ID, "gutsugutsu"));
+        Kata  = new SoundEvent(new ResourceLocation(this.MOD_ID, "katakata"));
     }
 
     @EventHandler
