@@ -37,7 +37,7 @@ public class Bonfire
     //■固定文字列
     public static final String MOD_ID = "bonfire";
     public static final String MOD_DOMAIN = "yousui115." + MOD_ID;
-    public static final String VERSION = "M1102_F2099_v2";
+    public static final String VERSION = "M1102_F2099_v3";
 
     //■インスタント
     @Mod.Instance(MOD_ID)
@@ -213,14 +213,21 @@ public class Bonfire
     @EventHandler
     public void post(FMLPostInitializationEvent event)
     {
-        //TODO:ItemFoodBのEnumと連携させよう。でないと表示が狂う可能性あり
         //■焚き火での調理可能食材情報登録(順番厳守)
-        EntityFood.registItemState(Items.BEEF,     0, Bonfire.itemCookedFood, 0, Bonfire.itemBurntFood, 0);
-        EntityFood.registItemState(Items.PORKCHOP, 0, Bonfire.itemCookedFood, 1, Bonfire.itemBurntFood, 1);
-        EntityFood.registItemState(Items.CHICKEN,  0, Bonfire.itemCookedFood, 2, Bonfire.itemBurntFood, 2);
-        EntityFood.registItemState(Items.MUTTON,   0, Bonfire.itemCookedFood, 3, Bonfire.itemBurntFood, 3);
-        EntityFood.registItemState(Items.RABBIT,   0, Bonfire.itemCookedFood, 4, Bonfire.itemBurntFood, 4);
-        EntityFood.registItemState(Items.FISH, ItemFishFood.FishType.COD.getMetadata(),    Bonfire.itemCookedFood, 5, Bonfire.itemBurntFood, 5);
-        EntityFood.registItemState(Items.FISH, ItemFishFood.FishType.SALMON.getMetadata(), Bonfire.itemCookedFood, 6, Bonfire.itemBurntFood, 6);
+//        EntityFood.registItemState(Items.BEEF,     0, Bonfire.itemCookedFood, 0, Bonfire.itemBurntFood, 0);
+//        EntityFood.registItemState(Items.PORKCHOP, 0, Bonfire.itemCookedFood, 1, Bonfire.itemBurntFood, 1);
+//        EntityFood.registItemState(Items.CHICKEN,  0, Bonfire.itemCookedFood, 2, Bonfire.itemBurntFood, 2);
+//        EntityFood.registItemState(Items.MUTTON,   0, Bonfire.itemCookedFood, 3, Bonfire.itemBurntFood, 3);
+//        EntityFood.registItemState(Items.RABBIT,   0, Bonfire.itemCookedFood, 4, Bonfire.itemBurntFood, 4);
+//        EntityFood.registItemState(Items.FISH, ItemFishFood.FishType.COD.getMetadata(),    Bonfire.itemCookedFood, 5, Bonfire.itemBurntFood, 5);
+//        EntityFood.registItemState(Items.FISH, ItemFishFood.FishType.SALMON.getMetadata(), Bonfire.itemCookedFood, 6, Bonfire.itemBurntFood, 6);
+        EntityFood.registItemState(Items.BEEF,     0, Items.COOKED_BEEF,     0, Bonfire.itemBurntFood, 0);
+        EntityFood.registItemState(Items.PORKCHOP, 0, Items.COOKED_PORKCHOP, 0, Bonfire.itemBurntFood, 1);
+        EntityFood.registItemState(Items.CHICKEN,  0, Items.COOKED_CHICKEN,  0, Bonfire.itemBurntFood, 2);
+        EntityFood.registItemState(Items.MUTTON,   0, Items.COOKED_MUTTON,   0, Bonfire.itemBurntFood, 3);
+        EntityFood.registItemState(Items.RABBIT,   0, Items.COOKED_RABBIT,   0, Bonfire.itemBurntFood, 4);
+        EntityFood.registItemState(Items.FISH, ItemFishFood.FishType.COD.getMetadata(),    Items.COOKED_FISH, ItemFishFood.FishType.COD.getMetadata(),    Bonfire.itemBurntFood, 5);
+        EntityFood.registItemState(Items.FISH, ItemFishFood.FishType.SALMON.getMetadata(), Items.COOKED_FISH, ItemFishFood.FishType.SALMON.getMetadata(), Bonfire.itemBurntFood, 6);
+
     }
 }
