@@ -37,7 +37,7 @@ public class Bonfire
     //■固定文字列
     public static final String MOD_ID = "bonfire";
     public static final String MOD_DOMAIN = "yousui115." + MOD_ID;
-    public static final String VERSION = "M1102_F2099_v1";
+    public static final String VERSION = "M1102_F2099_v2";
 
     //■インスタント
     @Mod.Instance(MOD_ID)
