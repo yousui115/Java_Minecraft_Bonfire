@@ -1,9 +1,11 @@
 package yousui115.bonfire.client.render;
 
+import org.lwjgl.opengl.GL11;
+
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -13,13 +15,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.client.registry.IRenderFactory;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-
-import org.lwjgl.opengl.GL11;
-
 import yousui115.bonfire.entity.EntityBonfire;
-import yousui115.bonfire.entity.EntityBonfire.EnumWoodState;
-
-//TODO: めちゃくちゃソースが汚い。
 
 @SideOnly(Side.CLIENT)
 public class RenderBonfire extends Render<EntityBonfire>
@@ -109,7 +105,7 @@ public class RenderBonfire extends Render<EntityBonfire>
      */
     @Override
 //    public void doRender(EntityBonfire entity, double x, double y, double z, float p_76986_8_, float partialTicks)
-    public void doRender(EntityBonfire entity, double dX, double dY, double dZ, float ff, float ff1)
+    public void doRender(EntityBonfire bonfire, double dX, double dY, double dZ, float ff, float ff1)
     {
         TextureMap texture = Minecraft.getMinecraft().getTextureMapBlocks();
         iconIndex[0] = texture.getAtlasSprite("minecraft:blocks/fire_layer_0");
@@ -120,25 +116,36 @@ public class RenderBonfire extends Render<EntityBonfire>
 
         //■描画に必要なデータを作成
         // ▼データウォッチャー 取得
-        entity.getDataWatcherLocal();
+//        entity.getDataWatcherLocal();
         // ▼薪々の状態
-        EnumWoodState state = entity.getNowWoodState();
+//        EnumWoodState state = entity.getNowWoodState();
+
+        // ▼燃焼中か否か
+        boolean isBurning = bonfire.state.isBurning;
+
         // ▼火のサイズ
-        float fScaleFire = entity.getFireScale(state) / 2.0f;
+//        float fScaleFire = entity.getFireScale(state) / 2.0f;
+        float fScaleFire = bonfire.state.getRenderFireScale() / 2.0f;
+
         // ▼薪々の色
-        float fColor0[] = entity.getWoodColor_0(state);
-        float fColor3[] = entity.getWoodColor_3(state);
+//        float fColor0[] = entity.getWoodColor_0(state);
+//        float fColor3[] = entity.getWoodColor_3(state);
+        float fColor0[] = bonfire.state.getRenderWoodColor_0();
+        float fColor3[] = bonfire.state.getRenderWoodColor_3();
+
         for (int i = 0; i < fColor[0].length; i++)
         {
             fColor[0][i] = fColor0[i];
             fColor[3][i] = fColor3[i];
             fColor[1][i] = fColor[2][i] = (fColor[0][i] + fColor[3][i]) / 2.0f;
         }
+
         // ▼てせれいたー
         Tessellator tessellator = Tessellator.getInstance();
         // ▼わーるどれんだらー
 //        WorldRenderer worldrenderer = tessellator.getWorldRenderer();
-        VertexBuffer worldrenderer = tessellator.getBuffer();
+//        VertexBuffer worldrenderer = tessellator.getBuffer();
+        BufferBuilder buffer = tessellator.getBuffer();
 
         //■薪々の描画
         for (int idy = 0; idy < 4; idy++)
@@ -150,7 +157,7 @@ public class RenderBonfire extends Render<EntityBonfire>
             GlStateManager.enableRescaleNormal();
 
             //■画像をバインド
-            this.bindEntityTexture(entity);
+            this.bindEntityTexture(bonfire);
 
             //▼ブレンド設定On
             //GlStateManager.enableBlend();     //<- 影Modだと透過しちゃう
@@ -176,7 +183,7 @@ public class RenderBonfire extends Render<EntityBonfire>
             GlStateManager.rotate(20.0F, 1.0F, 0.0F, 0.0F);
 
 //            worldrenderer.startDrawingQuads();
-            worldrenderer.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
+            buffer.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL);
 
 //            worldrenderer.setNormal(0.0F, 1.0F, 0.0F);
 
@@ -192,7 +199,7 @@ public class RenderBonfire extends Render<EntityBonfire>
                                     {iconT.getMinV(), iconT.getMinV() + fHalf, iconT.getMaxV()}};
 
                 int col = nVertexColor[nVecTexPos[idx][0]];
-                worldrenderer.pos(  dVec[nVecTexPos[idx][0]][0],
+                buffer.pos(  dVec[nVecTexPos[idx][0]][0],
                                     dVec[nVecTexPos[idx][0]][1],
                                     dVec[nVecTexPos[idx][0]][2])
                              .tex(  fUV[0][ nTex[ nVecTexPos[idx][4] ][1] ],
@@ -202,7 +209,7 @@ public class RenderBonfire extends Render<EntityBonfire>
                              .endVertex();
 
                 col = nVertexColor[nVecTexPos[idx][1]];
-                worldrenderer.pos(  dVec[nVecTexPos[idx][1]][0],
+                buffer.pos(  dVec[nVecTexPos[idx][1]][0],
                                     dVec[nVecTexPos[idx][1]][1],
                                     dVec[nVecTexPos[idx][1]][2])
                              .tex(  fUV[0][ nTex[ nVecTexPos[idx][5] ][1] ],
@@ -212,7 +219,7 @@ public class RenderBonfire extends Render<EntityBonfire>
                              .endVertex();
 
                 col = nVertexColor[nVecTexPos[idx][2]];
-                worldrenderer.pos(  dVec[nVecTexPos[idx][2]][0],
+                buffer.pos(  dVec[nVecTexPos[idx][2]][0],
                                     dVec[nVecTexPos[idx][2]][1],
                                     dVec[nVecTexPos[idx][2]][2])
                              .tex(  fUV[0][ nTex[ nVecTexPos[idx][6] ][1] ],
@@ -222,7 +229,7 @@ public class RenderBonfire extends Render<EntityBonfire>
                              .endVertex();
 
                 col = nVertexColor[nVecTexPos[idx][3]];
-                worldrenderer.pos(  dVec[nVecTexPos[idx][3]][0],
+                buffer.pos(  dVec[nVecTexPos[idx][3]][0],
                                     dVec[nVecTexPos[idx][3]][1],
                                     dVec[nVecTexPos[idx][3]][2])
                              .tex(  fUV[0][ nTex[ nVecTexPos[idx][7] ][1] ],
@@ -246,7 +253,8 @@ public class RenderBonfire extends Render<EntityBonfire>
         }
 
         //■炎の描画
-        if (state.isFire())
+//        if (state.isFire())
+        if (isBurning == true)
         {
             //▼ライティング処理On
             //GlStateManager.enableLighting();
@@ -268,7 +276,7 @@ public class RenderBonfire extends Render<EntityBonfire>
                 GlStateManager.pushMatrix();
 
 //                worldrenderer.startDrawingQuads();
-                worldrenderer.begin(7, DefaultVertexFormats.OLDMODEL_POSITION_TEX_NORMAL);
+                buffer.begin(7, DefaultVertexFormats.OLDMODEL_POSITION_TEX_NORMAL);
 
                 //5.適正位置
                 GlStateManager.translate((float)dX, (float)dY + 0.4F, (float)dZ);
@@ -281,10 +289,10 @@ public class RenderBonfire extends Render<EntityBonfire>
                 //1.縮小
                 GlStateManager.scale(fScaleFire, fScaleFire, 0.0F);
 
-                worldrenderer.pos(-fX,        fY, fZ).tex(fU1, fV1).normal(0f, 1f, 0f).endVertex();
-                worldrenderer.pos(-fX, 1.0F - fY, fZ).tex(fU1, fV2).normal(0f, 1f, 0f).endVertex();
-                worldrenderer.pos( fX, 1.0F - fY, fZ).tex(fU2, fV2).normal(0f, 1f, 0f).endVertex();
-                worldrenderer.pos( fX,        fY, fZ).tex(fU2, fV1).normal(0f, 1f, 0f).endVertex();
+                buffer.pos(-fX,        fY, fZ).tex(fU1, fV1).normal(0f, 1f, 0f).endVertex();
+                buffer.pos(-fX, 1.0F - fY, fZ).tex(fU1, fV2).normal(0f, 1f, 0f).endVertex();
+                buffer.pos( fX, 1.0F - fY, fZ).tex(fU2, fV2).normal(0f, 1f, 0f).endVertex();
+                buffer.pos( fX,        fY, fZ).tex(fU2, fV1).normal(0f, 1f, 0f).endVertex();
 
                 tessellator.draw();
                 GlStateManager.popMatrix();
@@ -305,7 +313,7 @@ public class RenderBonfire extends Render<EntityBonfire>
 
                 GlStateManager.pushMatrix();
 //                worldrenderer.startDrawingQuads();
-                worldrenderer.begin(7, DefaultVertexFormats.OLDMODEL_POSITION_TEX_NORMAL);
+                buffer.begin(7, DefaultVertexFormats.OLDMODEL_POSITION_TEX_NORMAL);
 
                 //4.適正位置
                 GlStateManager.translate((float)dX, (float)dY + 0.4F, (float)dZ);
@@ -316,10 +324,10 @@ public class RenderBonfire extends Render<EntityBonfire>
                 //1.縮小
                 GlStateManager.scale(fScaleFire, fScaleFire, 0.0F);
 
-                worldrenderer.pos(-fX,        fY, fZ).tex(fU1, fV1).normal(0f, 1f, 0f).endVertex();
-                worldrenderer.pos(-fX, 1.0F - fY, fZ).tex(fU1, fV2).normal(0f, 1f, 0f).endVertex();
-                worldrenderer.pos( fX, 1.0F - fY, fZ).tex(fU2, fV2).normal(0f, 1f, 0f).endVertex();
-                worldrenderer.pos( fX,        fY, fZ).tex(fU2, fV1).normal(0f, 1f, 0f).endVertex();
+                buffer.pos(-fX,        fY, fZ).tex(fU1, fV1).normal(0f, 1f, 0f).endVertex();
+                buffer.pos(-fX, 1.0F - fY, fZ).tex(fU1, fV2).normal(0f, 1f, 0f).endVertex();
+                buffer.pos( fX, 1.0F - fY, fZ).tex(fU2, fV2).normal(0f, 1f, 0f).endVertex();
+                buffer.pos( fX,        fY, fZ).tex(fU2, fV1).normal(0f, 1f, 0f).endVertex();
 
                 tessellator.draw();
                 GlStateManager.popMatrix();

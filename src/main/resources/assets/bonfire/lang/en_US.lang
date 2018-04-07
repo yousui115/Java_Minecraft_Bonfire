@@ -1,27 +1,2 @@
-﻿#
+#
 item.bf_bonfire.name=Bonfire
-
-item.bf_cooked_food.beef.name=cooked beef!
-item.bf_cooked_food.porkchop.name=cooked porkchop!
-item.bf_cooked_food.chicken.name=cooked chicken!
-item.bf_cooked_food.mutton.name=cooked mutton!
-item.bf_cooked_food.rabbit.name=cooked rabbit!
-item.bf_cooked_food.cod.name=cooked cod!
-item.bf_cooked_food.salmon.name=cooked salmon!
-
-item.bf_burnt_food.beef.name=burnt beef!
-item.bf_burnt_food.porkchop.name=burnt porkchop!
-item.bf_burnt_food.chicken.name=burnt chicken!
-item.bf_burnt_food.mutton.name=burnt mutton!
-item.bf_burnt_food.rabbit.name=burnt rabbit!
-item.bf_burnt_food.cod.name=burnt cod!
-item.bf_burnt_food.salmon.name=burnt salmon!
-
-item.bf_pot.empty.name=Pot (Empty)
-item.bf_pot.water.name=Pot (Water)
-item.bf_pot.boiled.name=Pot (Boiled)
-
-item.bf_water_bottle.name=Water Bottle
-
-tile.bf_blocklight.name=Don't touch me!
-

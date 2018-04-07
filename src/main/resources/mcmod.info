@@ -2,7 +2,7 @@
 {
   "modid": "bonfire",
   "name": "Bonfire",
-  "description": "add bonfire.",
+  "description": "Add Bonfire.",
   "version": "${version}",
   "mcversion": "${mcversion}",
   "url": "",

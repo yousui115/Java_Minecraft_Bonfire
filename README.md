@@ -1,11 +1,10 @@
-#[MinecraftMod] 焚き火 [MC1.10.2]<br>
+#焚き火<br>
 
-##■DL (M1102_F2099_v3)<br>
-https://www.dropbox.com/s/bd3z6n3ejubfelt/Bonfire_M1102_F2099_v3.jar?dl=0<br>
+##■まだ移行途中
 
 ##■動作環境<br>
-Minecraft 1.10.2<br>
-Forge2099<br>
+Minecraft 1.12.2<br>
+Forge2611<br>
 
 ##■はじめに<br>
 * このModは、焚き火(+α)を追加するModです。

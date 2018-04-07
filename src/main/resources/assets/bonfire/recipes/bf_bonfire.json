@@ -1,0 +1,16 @@
+{
+  "type": "forge:ore_shaped",
+  "group": "bonfire:bf_bonfire",
+  "pattern": [
+    "##",
+    "##"
+  ],
+  "key": {
+    "#": {
+      "item": "minecraft:stick"
+    }
+  },
+  "result": {
+    "item": "bonfire:bf_bonfire"
+  }
+}

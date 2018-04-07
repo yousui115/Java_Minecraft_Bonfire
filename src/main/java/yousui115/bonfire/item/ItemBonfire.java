@@ -17,8 +17,12 @@ public class ItemBonfire extends Item
      */
     @Override
 //    public boolean onItemUse(ItemStack stack, EntityPlayer playerIn, World worldIn, BlockPos pos, EnumFacing side, float hitX, float hitY, float hitZ)
-    public EnumActionResult onItemUse(ItemStack stack, EntityPlayer playerIn, World worldIn, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
+//    public EnumActionResult onItemUse(ItemStack stack, EntityPlayer playerIn, World worldIn, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
+    public EnumActionResult onItemUse(EntityPlayer player, World worldIn, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
     {
+
+        ItemStack stack = player.getHeldItem(hand);
+
         //■ブロックの上面が対象
         if(facing != EnumFacing.UP) { return EnumActionResult.FAIL; }
 
@@ -26,16 +30,17 @@ public class ItemBonfire extends Item
         EntityBonfire eb = new EntityBonfire(worldIn, pos.getX(), pos.getY()+1, pos.getZ());
 
         //■生存可能条件の確認
-        if(eb.canStay() == false) { return EnumActionResult.FAIL; }
+//        if(eb.canStay() == false) { return EnumActionResult.FAIL; }
 
         if(!worldIn.isRemote)
         {
             //■顕現
-            worldIn.spawnEntityInWorld(eb);
+            worldIn.spawnEntity(eb);
         }
 
-        stack.stackSize--;
+        stack.shrink(1);
 
         return EnumActionResult.SUCCESS;
     }
+
 }

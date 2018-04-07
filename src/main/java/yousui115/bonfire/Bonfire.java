@@ -1,233 +1,112 @@
 package yousui115.bonfire;
 
+import org.apache.logging.log4j.Logger;
+
 import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
-import net.minecraft.init.MobEffects;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
-import net.minecraft.item.ItemFishFood;
-import net.minecraft.item.ItemStack;
-import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundEvent;
+import net.minecraftforge.client.event.ModelRegistryEvent;
+import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.registry.EntityRegistry;
-import net.minecraftforge.fml.common.registry.GameRegistry;
-import yousui115.bonfire.block.BlockLight;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.registry.EntityEntry;
+import net.minecraftforge.fml.common.registry.EntityEntryBuilder;
 import yousui115.bonfire.entity.EntityBonfire;
-import yousui115.bonfire.entity.EntityFood;
-import yousui115.bonfire.entity.EntityPot;
-import yousui115.bonfire.item.ItemBonfire;
-import yousui115.bonfire.item.ItemFoodB;
-import yousui115.bonfire.item.ItemPot;
-import yousui115.bonfire.item.ItemWBottle;
-import yousui115.bonfire.item.RecipesWBottle;
+import yousui115.bonfire.util.BfBlocks;
+import yousui115.bonfire.util.BfItems;
 
-@Mod(modid = Bonfire.MOD_ID, version = Bonfire.VERSION, useMetadata = true)
+@Mod(modid = Bonfire.MOD_ID, name = Bonfire.MOD_NAME, version = Bonfire.VERSION)
+@EventBusSubscriber
 public class Bonfire
 {
-    //■固定文字列
+    //■
     public static final String MOD_ID = "bonfire";
     public static final String MOD_DOMAIN = "yousui115." + MOD_ID;
-    public static final String VERSION = "M1102_F2099_v3";
+
+    public static final String MOD_NAME = "Bonfire";
+
+    public static final String VERSION = "M1122_F2611_v1";
 
     //■インスタント
     @Mod.Instance(MOD_ID)
     public static Bonfire INSTANCE;
 
+    //■ロガー
+    private static Logger logger;
+
     //■クライアント側とサーバー側で異なるインスタンスを生成
     @SidedProxy(clientSide = MOD_DOMAIN + ".client.ClientProxy", serverSide = MOD_DOMAIN + ".CommonProxy")
     public static CommonProxy proxy;
 
-    //■追加アイテム
-    // ▼焚き火
-    public static Item itemBonfire;
-    public static String nameBonfire = "bf_bonfire";
-    public static ResourceLocation rlBonfire;
 
-    // ▼食料（おいしそう）
-    public static Item itemCookedFood;
-    public static String nameCookedFood = "bf_cooked_food";
-    public static ResourceLocation rlCookedFood;
-
-    // ▼食料（まずそう）
-    public static Item itemBurntFood;
-    public static String nameBurntFood = "bf_burnt_food";
-    public static ResourceLocation rlBurntFood;
-
-    // ▼ポット
-    public static Item itemPot;
-    public static String namePot = "bf_pot";
-    public static ResourceLocation rlPot;
-
-    // ▼水筒
-    public static Item itemWBottle;
-    public static String nameWBottle = "bf_water_bottle";
-    public static ResourceLocation rlWBottle;
-
-    //■追加ブロック
-    public static Block blockLight;
-    public static String nameLight = "bf_blocklight";
-//    public static ResourceLocation rlLight;
-    public static Item itemBlockLight;
-
-    //TODO:ここで持つべきか否か
-    //■効果音
-    public static SoundEvent Gutsu;
-    public static SoundEvent Kata;
 
     /**
-     * ■初期化処理（前処理）
-     * @param event
+     * ■初期化処理 前処理
      */
     @EventHandler
-    public void preinit(FMLPreInitializationEvent event)
+    public void preInit(FMLPreInitializationEvent event)
+    {
+        //■ろがー
+        logger = event.getModLog();
+
+        //■Renderの生成 と Entity <-> Render の関連性登録
+        proxy.registerRenderer();
+    }
+
+    /**
+     * ■アイテムの登録
+     * @param event
+     */
+    @SubscribeEvent
+    protected static void registerItem(RegistryEvent.Register<Item> event)
     {
         //■アイテムの生成と登録
-        // ▼焚き火
-        itemBonfire = new ItemBonfire()
-                          .setUnlocalizedName(nameBonfire)
-                          .setCreativeTab(CreativeTabs.MATERIALS);
-        rlBonfire = new ResourceLocation(MOD_ID, nameBonfire);
-        GameRegistry.register(itemBonfire, rlBonfire);
-
-        // ▼調理食材(おいしそう)
-        itemCookedFood = new ItemFoodB(4, 0.6f, false)
-                               .setPotionEffect(new PotionEffect(MobEffects.SATURATION, 600, 0), 0.8F)
-                               .setUnlocalizedName(nameCookedFood)
-                               .setHasSubtypes(true);
-        rlCookedFood = new ResourceLocation(MOD_ID, nameCookedFood);
-        GameRegistry.register(itemCookedFood, rlCookedFood);
-
-        // ▼調理食材(まずそう)
-        itemBurntFood = new ItemFoodB(2, 0.1f, false)
-                                .setPotionEffect(new PotionEffect(MobEffects.HUNGER, 300, 0), 0.8f)
-                                .setUnlocalizedName(nameBurntFood)
-                                .setHasSubtypes(true);
-        rlBurntFood = new ResourceLocation(MOD_ID, nameBurntFood);
-        GameRegistry.register(itemBurntFood, rlBurntFood);
-
-        // ▼ポット
-        itemPot = new ItemPot()
-                        .setUnlocalizedName(namePot)
-                        .setMaxStackSize(1)
-                        .setCreativeTab(CreativeTabs.MATERIALS)
-                        .setHasSubtypes(true).setContainerItem(itemPot);
-        rlPot = new ResourceLocation(MOD_ID, namePot);
-        GameRegistry.register(itemPot, rlPot);
-
-        // ▼水筒
-        itemWBottle = new ItemWBottle()
-                            .setUnlocalizedName(nameWBottle)
-                            .setMaxStackSize(1)
-                            .setMaxDamage(100)
-                            .setCreativeTab(CreativeTabs.FOOD);
-        rlWBottle = new ResourceLocation(MOD_ID, nameWBottle);
-        GameRegistry.register(itemWBottle, rlWBottle);
-
-        //■ブロックの生成と登録
-        blockLight = new BlockLight(Material.CIRCUITS)
-                         .setHardness(0.3F)
-                         .setLightLevel(1.0F)
-                         .setUnlocalizedName(nameLight)
-                         .setTickRandomly(true);
-        itemBlockLight = new ItemBlock(blockLight);
-        GameRegistry.register(blockLight,     new ResourceLocation(MOD_ID, nameLight));
-        GameRegistry.register(itemBlockLight, blockLight.getRegistryName());
-
-
-        //■Entityの登録
-        EntityRegistry.registerModEntity(EntityBonfire.class, "EntityBonfire", 0, this, 250, 5, false);
-        EntityRegistry.registerModEntity(EntityFood.class,    "EntityFood",    1, this, 250, 5, false);
-        EntityRegistry.registerModEntity(EntityPot.class,     "EntityPot",     2, this, 250, 5, false);
-
-        //■モデル登録
-        proxy.registerModels();
-
-        //■レンダラ登録
-        proxy.registerRenderers();
-
+        BfItems.create();
+        BfItems.registerItem(event);
     }
 
     /**
-     * ■初期化処理（本処理）
+     * ■
      * @param event
      */
-    @EventHandler
-    public void init(FMLInitializationEvent event)
+    @SubscribeEvent
+    protected static void registerBlocks(RegistryEvent.Register<Block> event)
     {
-        //■レシピ登録
-        // ▼焚き火
-        GameRegistry.addRecipe(new ItemStack(Bonfire.itemBonfire),
-                               "##",
-                               "##",
-                               '#', Items.STICK
-                              );
-
-        // ▼ポット
-        GameRegistry.addRecipe(new ItemStack(Bonfire.itemPot, 1, 0),
-                " # ",
-                " #w",
-                "## ",
-                '#', Items.IRON_INGOT,
-                'w', Items.STICK
-               );
-
-        // ▼ポット（水入り）
-        GameRegistry.addShapelessRecipe(new ItemStack(Bonfire.itemPot, 1, 1),
-                                        new ItemStack(Bonfire.itemPot, 1, 0),
-                                        new ItemStack(Items.WATER_BUCKET));
-
-        // ▼水筒
-        ItemStack wbottle = new ItemStack(Bonfire.itemWBottle);
-        wbottle.setItemDamage(99);
-        GameRegistry.addRecipe(wbottle ,
-                "w#",
-                "##",
-                'w', Blocks.PLANKS,
-                '#', Items.LEATHER
-               );
-
-        // ▼水筒への水補充
-        GameRegistry.addRecipe(new RecipesWBottle());
-
-//        //■レンダラ登録
-//        proxy.registerRenderers();
-
-        //■アイテム色の登録
-        proxy.registerItemColor();
-
-        //■効果音の登録
-        Gutsu = new SoundEvent(new ResourceLocation(this.MOD_ID, "gutsugutsu"));
-        Kata  = new SoundEvent(new ResourceLocation(this.MOD_ID, "katakata"));
+        BfBlocks.create();
+        BfBlocks.register(event);
     }
 
-    @EventHandler
-    public void post(FMLPostInitializationEvent event)
+    /**
+     * ■モデルの登録
+     * @param event
+     */
+    @SubscribeEvent
+    public static void registerItemModel(ModelRegistryEvent event)
     {
-        //■焚き火での調理可能食材情報登録(順番厳守)
-//        EntityFood.registItemState(Items.BEEF,     0, Bonfire.itemCookedFood, 0, Bonfire.itemBurntFood, 0);
-//        EntityFood.registItemState(Items.PORKCHOP, 0, Bonfire.itemCookedFood, 1, Bonfire.itemBurntFood, 1);
-//        EntityFood.registItemState(Items.CHICKEN,  0, Bonfire.itemCookedFood, 2, Bonfire.itemBurntFood, 2);
-//        EntityFood.registItemState(Items.MUTTON,   0, Bonfire.itemCookedFood, 3, Bonfire.itemBurntFood, 3);
-//        EntityFood.registItemState(Items.RABBIT,   0, Bonfire.itemCookedFood, 4, Bonfire.itemBurntFood, 4);
-//        EntityFood.registItemState(Items.FISH, ItemFishFood.FishType.COD.getMetadata(),    Bonfire.itemCookedFood, 5, Bonfire.itemBurntFood, 5);
-//        EntityFood.registItemState(Items.FISH, ItemFishFood.FishType.SALMON.getMetadata(), Bonfire.itemCookedFood, 6, Bonfire.itemBurntFood, 6);
-        EntityFood.registItemState(Items.BEEF,     0, Items.COOKED_BEEF,     0, Bonfire.itemBurntFood, 0);
-        EntityFood.registItemState(Items.PORKCHOP, 0, Items.COOKED_PORKCHOP, 0, Bonfire.itemBurntFood, 1);
-        EntityFood.registItemState(Items.CHICKEN,  0, Items.COOKED_CHICKEN,  0, Bonfire.itemBurntFood, 2);
-        EntityFood.registItemState(Items.MUTTON,   0, Items.COOKED_MUTTON,   0, Bonfire.itemBurntFood, 3);
-        EntityFood.registItemState(Items.RABBIT,   0, Items.COOKED_RABBIT,   0, Bonfire.itemBurntFood, 4);
-        EntityFood.registItemState(Items.FISH, ItemFishFood.FishType.COD.getMetadata(),    Items.COOKED_FISH, ItemFishFood.FishType.COD.getMetadata(),    Bonfire.itemBurntFood, 5);
-        EntityFood.registItemState(Items.FISH, ItemFishFood.FishType.SALMON.getMetadata(), Items.COOKED_FISH, ItemFishFood.FishType.SALMON.getMetadata(), Bonfire.itemBurntFood, 6);
+        proxy.registerItemModel();
+    }
 
+    @SubscribeEvent
+    public static void entityRegistration(final RegistryEvent.Register<EntityEntry> event)
+    {
+        event.getRegistry().register(
+                EntityEntryBuilder.create()
+                    .entity(EntityBonfire.class)
+                    .id(new ResourceLocation(Bonfire.MOD_ID, "bf_bonfire"), 1)
+                    .name("bf_bonfire")
+                    .tracker(160, 2, false)
+//                    .egg(0xffffff, 0xffffff)
+//                    .spawn(EnumCreatureType.MONSTER, 10, 1, 1, ForgeRegistries.BIOMES.getValues())
+                    .build()
+            );
+    }
+
+    public static void logout(String str)
+    {
+        logger.error(str);
     }
 }
