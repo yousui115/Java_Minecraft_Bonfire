@@ -1,0 +1,10 @@
+{
+  "gutsugutsu": {
+    "category": "neutral",
+    "sounds": ["bonfire:boil02"]
+  },
+  "katakata": {
+    "category": "neutral",
+    "sounds": ["bonfire:cover01"]
+  }
+}

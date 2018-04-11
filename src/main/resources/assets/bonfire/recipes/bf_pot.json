@@ -1,0 +1,21 @@
+{
+  "type": "forge:ore_shaped",
+  "group": "bonfire:bf_recipe_pot",
+  "pattern": [
+    " # ",
+    " #S",
+    "## "
+  ],
+  "key": {
+    "#": {
+      "item": "minecraft:iron_ingot"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    }
+  },
+  "result": {
+    "item": "bonfire:bf_pot",
+    "data": 0
+  }
+}

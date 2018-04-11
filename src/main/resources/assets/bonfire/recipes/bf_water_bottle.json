@@ -1,0 +1,20 @@
+{
+  "type": "forge:ore_shaped",
+  "group": "bonfire:bf_recipe_wate_bottle",
+  "pattern": [
+    "S#",
+    "##"
+  ],
+  "key": {
+    "#": {
+      "item": "minecraft:leather"
+    },
+    "S": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "item": "bonfire:bf_water_bottle",
+    "data": 99
+  }
+}

@@ -3,13 +3,14 @@ package yousui115.bonfire.entity;
 import java.lang.reflect.Constructor;
 import java.util.List;
 
-import javax.annotation.Nullable;
+import com.google.common.base.Predicate;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -25,6 +26,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import yousui115.bonfire.Bonfire;
+import yousui115.bonfire.item.ItemPot;
+import yousui115.bonfire.item.ItemPot.EnumPotState;
 import yousui115.bonfire.util.BfBlocks;
 
 public class EntityBonfire extends Entity
@@ -90,7 +93,8 @@ public class EntityBonfire extends Entity
         //■燃焼できる環境か否か
         if (canBurnEnv() == false)
         {
-            state.isBurning = false;
+            //■消火
+            doFireFighting();
         }
 
         //debug
@@ -107,6 +111,12 @@ public class EntityBonfire extends Entity
         else
         {
             setBlock(Blocks.AIR);
+        }
+
+        //■ロールバック処理
+        if (state.canRollBack() == true)
+        {
+            checkRollBack();
         }
 
         //■燃焼中のエフェクトやら
@@ -182,7 +192,7 @@ public class EntityBonfire extends Entity
             this.setBlock(Blocks.AIR);
 
             //■状態に応じたドロップアイテムを顕現させる
-            world.spawnEntity(new EntityItem(world, posX, posY, posZ, state.getItemStack()));
+            world.spawnEntity(new EntityItem(world, posX, posY, posZ, state.dropItemStack()));
         }
     }
 
@@ -205,13 +215,114 @@ public class EntityBonfire extends Entity
     }
 
     /**
-     * ■
+     * ■プレイヤーに右クリックされた。
      */
     @Override
     public boolean processInitialInteract(EntityPlayer playerIn, EnumHand handIn)
     {
+        //■プレイヤーのhandInのアイテムを調べる。
         ItemStack stack = playerIn.getHeldItem(handIn);
-        return state.interact(stack);
+
+        //■でーたじゃーまね 取得
+        this.getDataManagerLocal();
+
+        boolean success = false;
+
+        if (state.interact(stack) == true)
+        {
+            success = true;
+
+            if (stack.getItem() == Items.FLINT_AND_STEEL)
+            {
+                //■点火
+                state.isBurning = true;
+
+                //■カチッ！
+                soundIgnition();
+
+                playerIn.swingArm(handIn);
+
+                //■アイテムへの使用ダメージ
+                stack.damageItem(1, playerIn);
+            }
+            else if (stack.getItem() == Items.WATER_BUCKET)
+            {
+                //■消火
+                doFireFighting();
+            }
+            else
+            {
+                //■？
+                Bonfire.logout("right click NG");
+            }
+
+        }
+        // ▼食べ物 又は ポット(水)
+        else if (EntityFood.canBroilFood(stack) ||
+                 (stack.getItem() instanceof ItemPot &&
+                  stack.getMetadata() != EnumPotState.EMPTY.ordinal()))
+        {
+            double dDiffX = this.posX - playerIn.posX;
+            double dDiffZ = this.posZ - playerIn.posZ;
+            double dPosX = this.posX;
+            double dPosZ = this.posZ;
+            int nPlayerDir = 0; //Bonfireから見てのPlayerの方向
+            double dTheta = Math.atan2(dDiffX, dDiffZ) + Math.PI; //0 ~ 6.28...
+
+            double dTmp = Math.PI/4.0;
+            if (dTmp <= dTheta && dTheta < dTmp*3) { nPlayerDir = 0; }
+            else if (dTmp*3 <= dTheta && dTheta < dTmp*5) { nPlayerDir = 1; }
+            else if (dTmp*5 <= dTheta && dTheta < dTmp*7) { nPlayerDir = 2; }
+            else { nPlayerDir = 3; }
+
+            List<Entity> entities = world.getEntitiesWithinAABBExcludingEntity(this, this.getEntityBoundingBox());
+            int nDir = 0;
+            int idx;
+            for (idx = 0; idx < entities.size(); idx++)
+            {
+                if (entities.get(idx) instanceof EntityBroilItem)
+                {
+                    EntityBroilItem broilItem = (EntityBroilItem)entities.get(idx);
+                    nDir |= 0x1 << broilItem.getDirection();
+                }
+            }
+
+            for (idx = 0; idx < 4; idx++)
+            {
+                int dir = (nPlayerDir + idx) % 4;
+                int nBit = nDir & (0x1 << dir);
+                if (nBit == 0)
+                {
+                    //TODO:配置可能
+                    if (!this.world.isRemote)
+                    {
+                        if (stack.getItem() instanceof ItemPot)
+                        {
+                            //■ポット
+                            this.world.spawnEntity(new EntityPot(this.world, this.posX, this.posY, this.posZ, dir, stack));
+                        }
+                        else
+                        {
+                            //■食べ物
+                            this.world.spawnEntity(new EntityFood(this.world, this.posX, this.posY, this.posZ, dir, stack));
+                        }
+                    }
+
+                    stack.shrink(1);
+
+                    if (stack.getCount() <= 0)
+                    {
+                        //playerIn.destroyCurrentEquippedItem();
+                    }
+                    success = true;
+                    break;
+                }
+            }
+        }
+        //■でーたじゃーまね 更新
+        this.setDataManagerLocal();
+
+        return success;
     }
 
     /**
@@ -298,6 +409,19 @@ public class EntityBonfire extends Entity
     }
 
     /**
+     * ■■消火します
+     * (内部で tickFire, isReuse を更新)
+     */
+    protected void doFireFighting()
+    {
+        //■消火
+        state.isBurning = false;
+
+        //■火が消える音
+        soundFizz();
+    }
+
+    /**
      * ■ブロックの設置
      * @param blockIn 設置したいブロック
      */
@@ -328,7 +452,6 @@ public class EntityBonfire extends Entity
      * ■リフレクションを用いた、状態の生成
      * @return
      */
-    @Nullable
     public State createStateInstance(String nameIn, int tickIn)
     {
         EntityBonfire.State state = null;
@@ -347,7 +470,59 @@ public class EntityBonfire extends Entity
             e.printStackTrace();
         }
 
+        //■nullは返させない
+        if (state == null) { state = new White(0); }
+
         return state;
+    }
+
+    /**
+     * ■ロールバックの可能性
+     */
+    public void checkRollBack()
+    {
+        int tickRollBack = 0;
+
+        //■当り判定処理(EntityItemだけ選って収集）
+        List<Entity> list = world.getEntitiesInAABBexcluding(this, this.getEntityBoundingBox(),
+                                                             new Predicate<Entity>()
+                                                             {
+                                                                 @Override
+                                                                 public boolean apply(Entity entity)
+                                                                 {
+                                                                     return entity instanceof EntityItem;
+                                                                 }
+                                                             });
+
+        for(Entity entity : list)
+        {
+            if (entity.isDead == true) { continue; }
+
+            ItemStack itemstack = ((EntityItem)entity).getItem();
+            int nTime = 0;
+
+            //■棒, 紙, 本 は燃える
+            if (itemstack.getItem().equals(Items.STICK)) { nTime = 1000; }
+            else if (itemstack.getItem().equals(Items.PAPER)) { nTime = 100; }
+            else if (itemstack.getItem().equals(Items.BOOK)) { nTime = 1000; }
+            else { continue; }
+
+            //■投入された数だけロールバック時間を加算
+            tickRollBack += nTime * itemstack.getCount();
+
+            //■アイテムは燃える
+            if (!world.isRemote) { entity.setDead(); }
+        }
+
+        //■燃えるアイテムが投げ込まれていた。
+        if (tickRollBack != 0)
+        {
+            //■ロールバック！
+            state = state.tryRollBack(tickRollBack);
+
+            //■ボッ！
+            soundThrow();
+        }
     }
 
     /**
@@ -362,17 +537,7 @@ public class EntityBonfire extends Entity
         String name = this.getStateName();
         if (name.compareTo(state.getClass().getSimpleName()) != 0)
         {
-            State st = createStateInstance(name, tick);
-
-            //■nullなら、よくわがんにゃいのでリセット。
-            if (st == null)
-            {
-                state = new White(0);
-            }
-            else
-            {
-                state = st;
-            }
+            state = createStateInstance(name, tick);
         }
         else
         {
@@ -445,7 +610,7 @@ public class EntityBonfire extends Entity
         this.world.playSound(posX, posY, posZ,
                 SoundEvents.ENTITY_GHAST_SHOOT,
                 SoundCategory.BLOCKS,
-                0.5F,
+                0.3F,
                 rand.nextFloat() * 0.4F + 0.8F, false);
     }
 
@@ -493,27 +658,17 @@ public class EntityBonfire extends Entity
         //■光源を設置するか否か
         public boolean settingLight() { return false; }
 
-        //■
-        public boolean interact(ItemStack stackIn)
-        {
-            //TODO 仮実装
-            boolean isInteract = false;
+        //■右クリック
+        public abstract boolean interact(ItemStack stackIn);
 
-            if (isBurning == true)
-            {
-                isBurning = false;
-                isInteract = true;
-            }
-            else if (isBurning == false)
-            {
-                isBurning = true;
-                isInteract = true;
-            }
+        //■ロールバック出来るか否か
+        public boolean canRollBack() { return false; }
 
-            return isInteract;
-        }
+        //■ロールバック処理
+        public State tryRollBack(int rollTick) { return this; }
 
-        public ItemStack getItemStack() { return ItemStack.EMPTY; }
+        //■破壊時のドロップアイテム
+        public ItemStack dropItemStack() { return ItemStack.EMPTY; }
 
         //==========Render=============
 
@@ -555,6 +710,12 @@ public class EntityBonfire extends Entity
         }
 
         @Override
+        public boolean interact(ItemStack stackIn)
+        {
+            return stackIn.getItem() == Items.FLINT_AND_STEEL;
+        }
+
+        @Override
         public float getRenderFireScale() { return 0f; }
 
         @Override
@@ -568,6 +729,7 @@ public class EntityBonfire extends Entity
         {
             return new float[] {1f, 1f, 1f, 1f};
         }
+
 
     }
 
@@ -610,6 +772,12 @@ public class EntityBonfire extends Entity
         public boolean settingLight()
         {
             return tick < getMaxTick() / 2 ? false : true;
+        }
+
+        @Override
+        public boolean interact(ItemStack stackIn)
+        {
+            return stackIn.getItem() == Items.WATER_BUCKET;
         }
 
         @Override
@@ -668,6 +836,12 @@ public class EntityBonfire extends Entity
         public boolean settingLight() { return true; }
 
         @Override
+        public boolean interact(ItemStack stackIn)
+        {
+            return stackIn.getItem() == Items.WATER_BUCKET;
+        }
+
+        @Override
         public float getRenderFireScale() { return 1.0f; }
 
         @Override
@@ -707,6 +881,12 @@ public class EntityBonfire extends Entity
         {
             //■燃焼開始
             return isBurning == true ? new Ignition_Re(0) : this;
+        }
+
+        @Override
+        public boolean interact(ItemStack stackIn)
+        {
+            return stackIn.getItem() == Items.FLINT_AND_STEEL;
         }
 
         @Override
@@ -768,6 +948,12 @@ public class EntityBonfire extends Entity
         }
 
         @Override
+        public boolean interact(ItemStack stackIn)
+        {
+            return stackIn.getItem() == Items.WATER_BUCKET;
+        }
+
+        @Override
         public float getRenderFireScale() { return (float)tick / (float)getMaxTick(); }
 
         @Override
@@ -823,6 +1009,12 @@ public class EntityBonfire extends Entity
         public boolean settingLight() { return true; }
 
         @Override
+        public boolean interact(ItemStack stackIn)
+        {
+            return stackIn.getItem() == Items.WATER_BUCKET;
+        }
+
+        @Override
         public float getRenderFireScale() { return 1f; }
 
         @Override
@@ -855,7 +1047,7 @@ public class EntityBonfire extends Entity
         }
 
         @Override
-        public int getMaxTick() { return 200; }
+        public int getMaxTick() { return 2000; }
 
         @Override
         public State nextState()
@@ -878,6 +1070,25 @@ public class EntityBonfire extends Entity
 
         @Override
         public boolean settingLight() { return true; }
+
+        @Override
+        public boolean interact(ItemStack stackIn)
+        {
+            return stackIn.getItem() == Items.WATER_BUCKET;
+        }
+
+        @Override
+        public boolean canRollBack() { return true; }
+
+        @Override
+        public State tryRollBack(int rollTick)
+        {
+            int delta = tick - rollTick;
+
+            this.tick = delta < 0 ? 0 : delta;
+
+            return this;
+        }
 
         @Override
         public float getRenderFireScale() { return 1f; }
@@ -914,7 +1125,7 @@ public class EntityBonfire extends Entity
         }
 
         @Override
-        public int getMaxTick() { return 100; }
+        public int getMaxTick() { return 300; }
 
         @Override
         public State nextState()
@@ -934,6 +1145,30 @@ public class EntityBonfire extends Entity
         public boolean settingLight()
         {
             return tick < getMaxTick() / 2 ? true : false;
+        }
+
+        @Override
+        public boolean interact(ItemStack stackIn)
+        {
+            return stackIn.getItem() == Items.WATER_BUCKET;
+        }
+
+        @Override
+        public boolean canRollBack() { return true; }
+
+        @Override
+        public State tryRollBack(int rollTick)
+        {
+            int delta = tick - rollTick;
+
+            if (delta < 0)
+            {
+                State stateRB = new BurstRB(0);
+
+                return stateRB.tryRollBack(-delta);
+            }
+
+            return this;
         }
 
         @Override
@@ -977,6 +1212,12 @@ public class EntityBonfire extends Entity
         public State nextState()
         {
             return this;
+        }
+
+        @Override
+        public boolean interact(ItemStack stackIn)
+        {
+            return false;
         }
 
         @Override

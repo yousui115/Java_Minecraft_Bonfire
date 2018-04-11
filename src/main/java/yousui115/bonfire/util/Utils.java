@@ -4,7 +4,7 @@ import net.minecraft.item.ItemStack;
 
 public class Utils
 {
-    public static boolean isEmpty(ItemStack stackIn)
+    public static boolean isStackEmpty(ItemStack stackIn)
     {
         return stackIn == null ? true : stackIn.isEmpty() ? true : false;
     }

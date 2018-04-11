@@ -1,0 +1,59 @@
+{
+    "pools": [
+        {
+            "name": "water_bottle",
+            "rolls": 1,
+            "entries": [
+                {
+                    "type": "item",
+                    "name": "bonfire:bf_water_bottle",
+                    "weight": 1,
+                    "functions": [
+                        {
+                            "function": "minecraft:set_damage",
+                            "damage": 0.01
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "flint_and_steel",
+            "rolls": 1,
+            "entries": [
+                {
+                    "type": "item",
+                    "name": "minecraft:flint_and_steel",
+                    "weight": 1,
+                    "functions": [
+                        {
+                            "function": "minecraft:set_damage",
+                            "damage": {
+                                "min": 0.4,
+                                "max": 0.8
+                            }
+                        }
+                    ]
+
+                }
+            ]
+        },
+        {
+            "name": "pot",
+            "rolls": 1,
+            "entries": [
+                {
+                    "type": "item",
+                    "name": "bonfire:bf_pot",
+                    "weight": 1,
+                    "functions": [
+                        {
+                            "function": "minecraft:set_data",
+                            "data": 0
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
