@@ -29,6 +29,7 @@ import yousui115.bonfire.Bonfire;
 import yousui115.bonfire.item.ItemPot;
 import yousui115.bonfire.item.ItemPot.EnumPotState;
 import yousui115.bonfire.util.BfBlocks;
+import yousui115.bonfire.util.BfItems;
 
 public class EntityBonfire extends Entity
 {
@@ -362,11 +363,21 @@ public class EntityBonfire extends Entity
         int nZ = MathHelper.floor(posZ);
 
         //■接触してるEntityをリストアップしてチェック
-        List<Entity> list = world.getEntitiesWithinAABBExcludingEntity(this, this.getEntityBoundingBox());
-        for (Entity entity : list)
+        List<Entity> list = world.getEntitiesInAABBexcluding(this, this.getEntityBoundingBox(),
+                                                                new Predicate<Entity>()
+                                                                {
+                                                                    @Override
+                                                                    public boolean apply(Entity input) {
+                                                                        return input instanceof EntityBonfire;
+                                                                }});
+//        for (Entity entity : list)
+//        {
+//            //■EntityBonfireが既に置いてあるとfalse
+//            if (entity instanceof EntityBonfire) { return false; }
+//        }
+        if (list.size() != 0)
         {
-            //■EntityBonfireが既に置いてあるとfalse
-            if (entity instanceof EntityBonfire) { return false; }
+            return false;
         }
 
         //■設置場所にBonfireBlock以外のブロックがあったらfalse
@@ -381,7 +392,8 @@ public class EntityBonfire extends Entity
         block = world.getBlockState(pos).getBlock();
 //        if (Block.isEqualTo(block, Blocks.air) ||
 //            block.isSolidFullCube() == false)
-        if (Block.isEqualTo(block, Blocks.AIR))
+        if (Block.isEqualTo(block, Blocks.AIR) ||
+            block.isFullCube(block.getDefaultState()) == false)
         { return false; }
 
         //■そのブロックに当り判定がない とfalse
@@ -511,7 +523,8 @@ public class EntityBonfire extends Entity
             tickRollBack += nTime * itemstack.getCount();
 
             //■アイテムは燃える
-            if (!world.isRemote) { entity.setDead(); }
+//            if (!world.isRemote) { entity.setDead(); }
+            entity.setDead();
         }
 
         //■燃えるアイテムが投げ込まれていた。
@@ -730,6 +743,11 @@ public class EntityBonfire extends Entity
             return new float[] {1f, 1f, 1f, 1f};
         }
 
+        @Override
+        public ItemStack dropItemStack()
+        {
+            return new ItemStack(BfItems.BONFIRE);
+        }
 
     }
 
@@ -795,6 +813,12 @@ public class EntityBonfire extends Entity
             return new float[] {1f, 1f, 1f, 1f};
         }
 
+        @Override
+        public ItemStack dropItemStack()
+        {
+            return new ItemStack(Items.STICK, 3, 0);
+        }
+
     }
 
     /**
@@ -858,6 +882,11 @@ public class EntityBonfire extends Entity
             return new float[] {1f, 1f, 1f, 1f};
         }
 
+        @Override
+        public ItemStack dropItemStack()
+        {
+            return new ItemStack(Items.STICK, 3, 0);
+        }
     }
 
     /**
@@ -904,6 +933,11 @@ public class EntityBonfire extends Entity
             return new float[] {1f, 1f, 1f, 1f};
         }
 
+        @Override
+        public ItemStack dropItemStack()
+        {
+            return new ItemStack(Items.STICK, 3, 0);
+        }
     }
 
     /**
@@ -968,6 +1002,11 @@ public class EntityBonfire extends Entity
             return new float[] {1f, 1f, 1f, 1f};
         }
 
+        @Override
+        public ItemStack dropItemStack()
+        {
+            return new ItemStack(Items.STICK, 3, 0);
+        }
     }
 
     /**
@@ -1031,6 +1070,11 @@ public class EntityBonfire extends Entity
             return new float[] {1f, 1f, 1f, 1f};
         }
 
+        @Override
+        public ItemStack dropItemStack()
+        {
+            return new ItemStack(Items.STICK, 3, 0);
+        }
     }
 
     /**
@@ -1107,6 +1151,12 @@ public class EntityBonfire extends Entity
             //1.0 -> 0.0
             float fProgr = (float)(getMaxTick() - tick) / (float)getMaxTick();
             return new float[] {1f, fProgr, fProgr, 1f};
+        }
+
+        @Override
+        public ItemStack dropItemStack()
+        {
+            return new ItemStack(Items.COAL, 1, 1);
         }
 
     }
@@ -1190,6 +1240,12 @@ public class EntityBonfire extends Entity
             return new float[] {fProgr, 0f, 0f, 1f};
         }
 
+        @Override
+        public ItemStack dropItemStack()
+        {
+            return new ItemStack(Items.COAL, 1, 1);
+        }
+
     }
 
     /**
@@ -1233,6 +1289,12 @@ public class EntityBonfire extends Entity
         public float[] getRenderWoodColor_3()
         {
             return new float[] {0f, 0f, 0f, 1f};
+        }
+
+        @Override
+        public ItemStack dropItemStack()
+        {
+            return new ItemStack(Items.COAL, 1, 1);
         }
 
     }
