@@ -47,7 +47,7 @@ public class Bonfire
 
     public static final String MOD_NAME = "Bonfire";
 
-    public static final String VERSION = "M1122_F2611_v3";
+    public static final String VERSION = "M1122_F2611_v4";
 
     //■インスタント
     @Mod.Instance(MOD_ID)

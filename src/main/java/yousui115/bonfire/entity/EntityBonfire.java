@@ -426,11 +426,12 @@ public class EntityBonfire extends Entity
      */
     protected void doFireFighting()
     {
+        //■火が消える音
+        if (state.isBurning == true) { soundFizz(); }
+
         //■消火
         state.isBurning = false;
 
-        //■火が消える音
-        soundFizz();
     }
 
     /**
