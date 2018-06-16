@@ -12,10 +12,13 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.Mod.EventHandler;
+import net.minecraftforge.fml.common.ModContainer;
 import net.minecraftforge.fml.common.SidedProxy;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -44,7 +47,7 @@ public class Bonfire
 
     public static final String MOD_NAME = "Bonfire";
 
-    public static final String VERSION = "M1122_F2611_v2";
+    public static final String VERSION = "M1122_F2611_v3";
 
     //■インスタント
     @Mod.Instance(MOD_ID)
@@ -57,6 +60,7 @@ public class Bonfire
     @SidedProxy(clientSide = MOD_DOMAIN + ".client.ClientProxy", serverSide = MOD_DOMAIN + ".CommonProxy")
     public static CommonProxy proxy;
 
+    public static boolean isTAN = false;
 
 
     /**
@@ -74,6 +78,20 @@ public class Bonfire
         //■ルーティングテーブルの登録
         BfLootTable.create();
         BfLootTable.register();
+    }
+
+    /**
+     *
+     * @param event
+     */
+    @EventHandler
+    public void init(FMLInitializationEvent event)
+    {
+        for (ModContainer cont : Loader.instance().getModList())
+        {
+            //■複数判定する場合があるので、おいそれとbreakさせない
+            if (cont.getModId().equals("toughasnails")) { isTAN = true; break;}
+        }
     }
 
     /**

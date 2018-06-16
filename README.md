@@ -1,9 +1,9 @@
 # 焚き火<br>
 
-## ■DL (M1122_F2611_v2)
-https://www.dropbox.com/s/m1ak5fsecsrxrcr/bonfire_M1122_F2611_v2.jar?dl=0
+## ■DL (M1122_F2611_v3)
+https://www.dropbox.com/s/6ibv47opgex9c1e/bonfire_M1122_F2611_v3.jar?dl=0
 
-## ■動作環境<br>
+## ■開発環境<br>
 Minecraft 1.12.2<br>
 Forge2611<br>
 
@@ -51,7 +51,7 @@ Forge2611<br>
  鶏肉<br>
  兎肉<br>
  羊肉<br>
- 魚(内部表記がCODなので鱈 タラかな？)<br>
+ 魚<br>
  鮭</dd>
 </dl>
 
@@ -68,7 +68,11 @@ Forge2611<br>
 * しばらく火にかけておくと「煮沸済み」ポットに内部変化する (フタが微動していたら変化済み)
 * 「煮沸済み」ポットを右クリックすると自分の場所にアイテム化する。
 * アイテム化した「煮沸済み」ポットと「水筒」をクラフト(自由配置)すると、「水筒」に水を補充出来る。
-* 満タンの「水筒」の場合、10回喉を潤す事が出来る。(フインキ)
+* 満タンの「水筒」の場合、10回喉を潤す事が出来る。(Tough As Nailsに対応)
+
+## ■その他
+Bonfireの光源ブロックの登録名は「bonfire:bf_blocklight」となっています。
+Tough As Nailsのコンフィグファイル記入時にご参考下さい。
 
 ## ■謝辞
 さまざまなMinecraft Mod Open Sourceから技術を拝借しております。<br>
