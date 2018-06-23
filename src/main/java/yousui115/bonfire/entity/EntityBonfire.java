@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.util.List;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.Lists;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
@@ -30,6 +31,7 @@ import yousui115.bonfire.item.ItemPot;
 import yousui115.bonfire.item.ItemPot.EnumPotState;
 import yousui115.bonfire.util.BfBlocks;
 import yousui115.bonfire.util.BfItems;
+import yousui115.bonfire.util.Utils;
 
 public class EntityBonfire extends Entity
 {
@@ -37,6 +39,11 @@ public class EntityBonfire extends Entity
 
     protected static final DataParameter<Integer> TICK_FIRE = EntityDataManager.<Integer>createKey(EntityBonfire.class, DataSerializers.VARINT);
     protected static final DataParameter<String> STATE_NAME = EntityDataManager.<String>createKey(EntityBonfire.class, DataSerializers.STRING);
+
+    public static List<ItemStack> LIST_FIRE  = Lists.newArrayList(new ItemStack(Items.FLINT_AND_STEEL));
+    public static List<ItemStack> LIST_WATER = Lists.newArrayList(new ItemStack(Items.WATER_BUCKET),
+                                                                   new ItemStack(BfItems.POT, 1, 1),
+                                                                   new ItemStack(BfItems.POT, 1, 2));
 
     //==============================================================
 
@@ -221,47 +228,59 @@ public class EntityBonfire extends Entity
     @Override
     public boolean processInitialInteract(EntityPlayer playerIn, EnumHand handIn)
     {
-        //■プレイヤーのhandInのアイテムを調べる。
-        ItemStack stack = playerIn.getHeldItem(handIn);
-
         //■でーたじゃーまね 取得
         this.getDataManagerLocal();
 
-        boolean success = false;
+        Interact(playerIn, handIn);
 
-        if (state.interact(stack) == true)
+        //■でーたじゃーまね 更新
+        this.setDataManagerLocal();
+
+        return true;
+    }
+
+    /**
+     *
+     * @param stackIn
+     */
+    protected void Interact(EntityPlayer playerIn, EnumHand handIn)
+    {
+        //■プレイヤーのhandInのアイテムを調べる。
+        ItemStack stack = playerIn.getHeldItem(handIn);
+
+        //■着火・消火 作業はスニークする事。
+        if (playerIn.isSneaking() == true)
         {
-            success = true;
-
-            if (stack.getItem() == Items.FLINT_AND_STEEL)
+            EnumItem interactItem = state.interact(stack);
+            if (interactItem != EnumItem.NONE)
             {
-                //■点火
-                state.isBurning = true;
+                if (interactItem == EnumItem.FIRE)
+                {
+                    //■点火
+                    state.isBurning = true;
 
-                //■カチッ！
-                soundIgnition();
+                    //■カチッ！
+                    soundIgnition();
 
-                playerIn.swingArm(handIn);
+                    playerIn.swingArm(handIn);
 
-                //■アイテムへの使用ダメージ
-                stack.damageItem(1, playerIn);
+                    //■アイテムへの使用ダメージ
+                    stack.damageItem(1, playerIn);
+
+                    return;
+                }
+                else if (interactItem == EnumItem.WATER)
+                {
+                    //■消火
+                    doFireFighting();
+
+                    return;
+                }
             }
-            else if (stack.getItem() == Items.WATER_BUCKET)
-            {
-                //■消火
-                doFireFighting();
-            }
-            else
-            {
-                //■？
-                Bonfire.logout("right click NG");
-            }
-
         }
         // ▼食べ物 又は ポット(水)
         else if (EntityFood.canBroilFood(stack) ||
-                 (stack.getItem() instanceof ItemPot &&
-                  stack.getMetadata() != EnumPotState.EMPTY.ordinal()))
+                 (stack.getItem() instanceof ItemPot && stack.getMetadata() != EnumPotState.EMPTY.ordinal()))
         {
             double dDiffX = this.posX - playerIn.posX;
             double dDiffZ = this.posZ - playerIn.posZ;
@@ -311,19 +330,15 @@ public class EntityBonfire extends Entity
 
                     stack.shrink(1);
 
-                    if (stack.getCount() <= 0)
-                    {
-                        //playerIn.destroyCurrentEquippedItem();
-                    }
-                    success = true;
+//                    if (stack.getCount() <= 0)
+//                    {
+//                        playerIn.destroyCurrentEquippedItem();
+//                    }
+
                     break;
                 }
             }
         }
-        //■でーたじゃーまね 更新
-        this.setDataManagerLocal();
-
-        return success;
     }
 
     /**
@@ -640,7 +655,18 @@ public class EntityBonfire extends Entity
                 2.6F + (rand.nextFloat() - rand.nextFloat()) * 0.8F, false);
     }
 
+
+    //======================= Enum  =================================
+
+    protected enum EnumItem
+    {
+        NONE, FIRE, WATER
+    }
+
     //======================= State =================================================
+
+
+
 
     /**
      * ■
@@ -673,7 +699,7 @@ public class EntityBonfire extends Entity
         public boolean settingLight() { return false; }
 
         //■右クリック
-        public abstract boolean interact(ItemStack stackIn);
+        public abstract EnumItem interact(ItemStack stackIn);
 
         //■ロールバック出来るか否か
         public boolean canRollBack() { return false; }
@@ -683,6 +709,20 @@ public class EntityBonfire extends Entity
 
         //■破壊時のドロップアイテム
         public ItemStack dropItemStack() { return ItemStack.EMPTY; }
+
+        //■
+        protected boolean isStateChangeItem(ItemStack stackIn, List<ItemStack> listIn)
+        {
+            if (Utils.isStackEmpty(stackIn) == true) { return false; }
+
+            boolean is = false;
+            for (ItemStack stack : listIn)
+            {
+                if (stack.isItemEqualIgnoreDurability(stackIn) == true) { return true; }
+            }
+
+            return false;
+        }
 
         //==========Render=============
 
@@ -724,9 +764,9 @@ public class EntityBonfire extends Entity
         }
 
         @Override
-        public boolean interact(ItemStack stackIn)
+        public EnumItem interact(ItemStack stackIn)
         {
-            return stackIn.getItem() == Items.FLINT_AND_STEEL;
+            return isStateChangeItem(stackIn, EntityBonfire.LIST_FIRE) == true ? EnumItem.FIRE : EnumItem.NONE;
         }
 
         @Override
@@ -794,9 +834,9 @@ public class EntityBonfire extends Entity
         }
 
         @Override
-        public boolean interact(ItemStack stackIn)
+        public EnumItem interact(ItemStack stackIn)
         {
-            return stackIn.getItem() == Items.WATER_BUCKET;
+            return isStateChangeItem(stackIn, EntityBonfire.LIST_WATER) == true ? EnumItem.WATER : EnumItem.NONE;
         }
 
         @Override
@@ -861,9 +901,9 @@ public class EntityBonfire extends Entity
         public boolean settingLight() { return true; }
 
         @Override
-        public boolean interact(ItemStack stackIn)
+        public EnumItem interact(ItemStack stackIn)
         {
-            return stackIn.getItem() == Items.WATER_BUCKET;
+            return isStateChangeItem(stackIn, EntityBonfire.LIST_WATER) == true ? EnumItem.WATER : EnumItem.NONE;
         }
 
         @Override
@@ -914,9 +954,10 @@ public class EntityBonfire extends Entity
         }
 
         @Override
-        public boolean interact(ItemStack stackIn)
+        public EnumItem interact(ItemStack stackIn)
         {
-            return stackIn.getItem() == Items.FLINT_AND_STEEL;
+//            return stackIn.getItem() == Items.FLINT_AND_STEEL;
+            return isStateChangeItem(stackIn, EntityBonfire.LIST_FIRE) == true ? EnumItem.FIRE : EnumItem.NONE;
         }
 
         @Override
@@ -983,9 +1024,9 @@ public class EntityBonfire extends Entity
         }
 
         @Override
-        public boolean interact(ItemStack stackIn)
+        public EnumItem interact(ItemStack stackIn)
         {
-            return stackIn.getItem() == Items.WATER_BUCKET;
+            return isStateChangeItem(stackIn, EntityBonfire.LIST_WATER) == true ? EnumItem.WATER : EnumItem.NONE;
         }
 
         @Override
@@ -1049,9 +1090,9 @@ public class EntityBonfire extends Entity
         public boolean settingLight() { return true; }
 
         @Override
-        public boolean interact(ItemStack stackIn)
+        public EnumItem interact(ItemStack stackIn)
         {
-            return stackIn.getItem() == Items.WATER_BUCKET;
+            return isStateChangeItem(stackIn, EntityBonfire.LIST_WATER) == true ? EnumItem.WATER : EnumItem.NONE;
         }
 
         @Override
@@ -1117,9 +1158,9 @@ public class EntityBonfire extends Entity
         public boolean settingLight() { return true; }
 
         @Override
-        public boolean interact(ItemStack stackIn)
+        public EnumItem interact(ItemStack stackIn)
         {
-            return stackIn.getItem() == Items.WATER_BUCKET;
+            return isStateChangeItem(stackIn, EntityBonfire.LIST_WATER) == true ? EnumItem.WATER : EnumItem.NONE;
         }
 
         @Override
@@ -1199,9 +1240,9 @@ public class EntityBonfire extends Entity
         }
 
         @Override
-        public boolean interact(ItemStack stackIn)
+        public EnumItem interact(ItemStack stackIn)
         {
-            return stackIn.getItem() == Items.WATER_BUCKET;
+            return isStateChangeItem(stackIn, EntityBonfire.LIST_WATER) == true ? EnumItem.WATER : EnumItem.NONE;
         }
 
         @Override
@@ -1272,9 +1313,9 @@ public class EntityBonfire extends Entity
         }
 
         @Override
-        public boolean interact(ItemStack stackIn)
+        public EnumItem interact(ItemStack stackIn)
         {
-            return false;
+            return EnumItem.NONE;
         }
 
         @Override
